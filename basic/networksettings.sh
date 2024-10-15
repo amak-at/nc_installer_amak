@@ -1,18 +1,23 @@
 #!/bin/bash
 
-# Display available network interfaces
-echo "Available network interfaces:"
-ip -o -f inet addr show | awk '{print $2, $4}' | grep -v lo
+
 
 # Ask for interface
-read -p "Please enter the desired network interface: " INTERFACE
 
-# Check if the interface exists
-if ! ip link show "$INTERFACE" &> /dev/null; then
-    echo "The interface '$INTERFACE' does not exist. Please try again."
-    exit 1
-fi
+while true; do
+    # Display available network interfaces
+    echo "Available network interfaces:"
+    ip -o -f inet addr show | awk '{print $2, $4}' | grep -v lo
+    
+    read -p "Please enter the desired network interface: " INTERFACE
 
+    # Check if the interface exists
+    if ! ip link show "$INTERFACE" &> /dev/null; then
+        echo "The interface '$INTERFACE' does not exist. Please try again."
+    else
+        break #correct selected interface
+    fi
+done
 # get current IP address and subnetprefix
 CURRENT_IP=$(ip -o -f inet addr show $INTERFACE | awk '{print $4}' | cut -d'/' -f1)
 CURRENT_SUBNET_PREFIX=$(ip -o -f inet addr show ens18 | awk '{print $4}' | cut -d'/' -f2)
