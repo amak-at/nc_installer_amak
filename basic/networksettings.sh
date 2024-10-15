@@ -73,7 +73,9 @@ read -p "Please enter the second DNS server: " DNS2
 
 
 # Create the network configuration
-cat <<EOF > /etc/netplan/01-netcfg.yaml
+# TODO change to default 50-cloud-init.yaml
+cat <<EOF > /etc/netplan/01-nc-netcnfg.yaml
+
 network:
     ethernets:
         $INTERFACE:
@@ -91,7 +93,8 @@ network:
 EOF
 
 # Apply network settings
-sudo chmod 600 /etc/netplan/01-netcfg.yaml
+# TODO change to default 50-cloud-init.yaml
+sudo chmod 600 /etc/netplan/01-nc-netcnfg.yaml
 sudo netplan apply
 
 
