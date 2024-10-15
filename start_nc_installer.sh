@@ -119,7 +119,7 @@ function multiChoice {
 }
 
 # Usage: multiChoice "header message" resultArray "comma separated options" "comma separated default values"
-multiChoice "Select options:" result "change hostname;Two 2;Three 3" "0;0;0"
+multiChoice "Select options:" result "change hostname;change network settings;Three 3" "0;0;0"
 
 # Process selected options
 for idx in "${result[@]}"; do
@@ -129,7 +129,8 @@ for idx in "${result[@]}"; do
             ./basic/hostname.sh
             ;;
         1) 
-            echo "Option 2 selected"
+            echo "Changing network settings..."
+            ./basic/networksettings.sh
             ;;
         2) 
             echo "Option 3 selected"
