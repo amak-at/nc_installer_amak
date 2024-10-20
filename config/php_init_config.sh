@@ -7,7 +7,7 @@ OS_TIMEZONE=$(timedatectl show --property=Timezone --value)
 
 # Definiere die Einstellungen als assoziatives Array
 declare -A SETTINGS=(
-    ["memory_limit"]="4096"
+    ["memory_limit"]="4096M"
     ["upload_max_filesize"]="20G"
     ["post_max_size"]="20G"
     ["date.timezone"]="$OS_TIMEZONE"
@@ -34,4 +34,4 @@ for KEY in "${!SETTINGS[@]}"; do
     fi
 done
 
-echo "Konfiguration erfolgreich aktualisiert."
+echo "PHP configuration complete."
