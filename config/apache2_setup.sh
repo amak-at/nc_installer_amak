@@ -47,10 +47,4 @@ systemctl restart apache2
 
 echo "Nextcloud Apache configuration created successfully."
 
-# prepare data folder
-mkdir /home/data/
-chown -R www-data:www-data /home/data/
-chown -R www-data:www-data /var/www/nextcloud/
-chmod -R 755 /var/www/nextcloud/
-
 exit 0

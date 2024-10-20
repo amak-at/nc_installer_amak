@@ -138,6 +138,10 @@ for idx in "${result[@]}"; do
             ;;
         *) 
             echo "installing Nextcloud"
+            ./dependencies/install_nextcloud_latest.sh
+            ./config/php_init_config.sh
+            ./config/mariadb_setup.sh
+            ./config/apache2_setup.sh
             ;;
     esac
 done

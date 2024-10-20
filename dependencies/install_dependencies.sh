@@ -17,7 +17,4 @@ apt install php8.2 libapache2-mod-php8.2 php8.2-zip php8.2-xml php8.2-mbstring p
 #isntall mariadb
 apt install mariadb-server -y
 
-# Download lastest nextcloud version
-cd /tmp && wget https://download.nextcloud.com/server/releases/latest.zip
-unzip latest.zip
-mv nextcloud /var/www/
+exit 0
