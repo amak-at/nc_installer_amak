@@ -3,6 +3,14 @@
 ENV_FILE=$1
 source $ENV_FILE
 
+check_user_canceled(){
+    # Check if the user canceled the input
+    if [ $? -ne 0 ]; then
+        echo "User canceled the input. Bye"
+        exit 1
+    fi
+}
+
 #TODO Fix IP validation
 is_valid_ip() {
     local ip=$1

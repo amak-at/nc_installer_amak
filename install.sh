@@ -21,4 +21,4 @@ find ./ -type f -name "*.sh" -exec chmod +x {} \;
 mkdir $ENV_DIR
 
 ./gui/install_menu.sh $ENV_DIR
-#rm -R $ENV_DIR
+rm -R $ENV_DIR

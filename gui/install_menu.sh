@@ -71,6 +71,20 @@ then
         esac
     done
 
+    # Process the selected options
+    for option in "${selected_array[@]}"; do
+        case $option in
+
+            1) ./basic/hostname.sh $ENV_FILE;;
+            
+            2) ./basic/networksettings.sh $ENV_FILE;;
+
+            3) ./dependencies/install_dependencies.sh ;;
+            4) echo "You chose Option 4: installing Nextcloud";;
+            *) echo "unknown option: $option";;
+        esac
+    done
+
 else
     # User clicked Cancel
     echo "Bye Bye"
