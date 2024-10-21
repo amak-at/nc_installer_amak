@@ -35,3 +35,5 @@ for KEY in "${!SETTINGS[@]}"; do
 done
 
 echo "PHP configuration complete."
+
+exit 0

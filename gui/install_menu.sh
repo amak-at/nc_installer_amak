@@ -3,7 +3,7 @@
 #define ENV_DIR and ENV_FILE for USER_INPUTs
 ENV_DIR=$1
 ENV_FILE=${ENV_DIR}/settings.txt
-touch $ENV_FILE
+echo "" > $ENV_FILE
 
 # define Title Header
 TITLE_TXT="[Nextcloud-Installer (c) Amak-AT]"
@@ -38,6 +38,7 @@ then
     whiptail --title "$TITLE_TEXT" --msgbox "First you have to choose between what configuration and parts you want to install. If you are not sure - select all and go through it." 13 50;
 
     # Define multipe-choice options
+    #TODO Timesettings
     OPTIONS=(
         1 "configure hostname" OFF
         2 "change network settings" OFF
@@ -66,7 +67,18 @@ then
             2)  ./gui/ip_setting.sh $ENV_FILE;;
 
             3) echo "You chose Option 3: installing dependencies";;
-            4) echo "You chose Option 4: installing Nextcloud";;
+
+            4)  get_user_clear_input "FQ_DOMAIN" "Define your FQ-Domainname for your Nextcloud" "nextcloud.example.com"
+                get_user_clear_input "NC_PORT" "Define a Port on wich your Nextcloud is listening (recomended: 80)" "80"
+                get_user_clear_input "DB_NAME" "Define a database name for Nextcloud" "nextcloud" 
+                get_user_clear_input "DB_USER" "Define a database user for Nextcloud" "nextcloudDBuser"
+                get_user_clear_input "DB_PASS" "Define a database password for Nextcloud" "nextcloudDBpass"
+                get_user_clear_input "WWW_DIR" "Select a directory for the Nextcloud installation (recommended: /var/www)" "/var/www"
+                get_user_clear_input "DATA_DIR" "Select a direcotry for your Nextcloud Data (default: /home/data)" "/home/data"
+                get_user_clear_input "NC_ADMIN" "Define a username for your Nextcloud admin account" "nc-admin"
+                get_user_clear_input "NC_ADMIN_PASS" "Define a password for your Nextcloud admin account" "nc-admin-pass"
+                ;;
+
             *) echo "unknown option: $option";;
         esac
     done
@@ -80,7 +92,14 @@ then
             2) ./basic/networksettings.sh $ENV_FILE;;
 
             3) ./dependencies/install_dependencies.sh ;;
-            4) echo "You chose Option 4: installing Nextcloud";;
+
+            4)  ./dependencies/install_nextcloud_latest.sh $ENV_FILE
+                ./config/php_init_config.sh
+                ./config/mariadb_setup.sh $ENV_FILE
+                ./config/apache2_setup.sh $ENV_FILE
+                ./config/init_nextcloud.sh $ENV_FILE
+                ;;
+
             *) echo "unknown option: $option";;
         esac
     done
@@ -89,3 +108,5 @@ else
     # User clicked Cancel
     echo "Bye Bye"
 fi
+
+exit 0

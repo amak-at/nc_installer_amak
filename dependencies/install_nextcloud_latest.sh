@@ -1,18 +1,13 @@
 #!/bin/bash
-
+source $1
 # Download lastest nextcloud version
 cd /tmp && wget https://download.nextcloud.com/server/releases/latest.zip
 unzip latest.zip
-mv nextcloud /var/www/
+mv nextcloud $WWW_DIR/
 
 # TODO define variables with user-input
-DATA_DIR="/home/data"
-NEXTCLOUD_DIR="/var/www/nextcloud/"
-DB_NAME="nextcloud"
-DB_USER="nextclouduser"
-DB_PASS="asdf1234"
-NC_ADMIN="nc-admin"
-NC_ADMIN_PASS="nc-admin-pass"
+NEXTCLOUD_DIR="$WWW_DIR/nextcloud/"
+echo "NEXTCLOUD_DIR=$NEXTCLOUD_DIR" >> $1
 
 mkdir $DATA_DIR
 chown -R www-data:www-data $DATA_DIR
@@ -38,5 +33,6 @@ cat <<EOF > $AUTO_CONF_FILE
 EOF
 
 chown www-data:www-data $AUTO_CONF_FILE
+
 
 exit 0

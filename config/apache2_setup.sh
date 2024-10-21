@@ -1,24 +1,21 @@
 #!/bin/bash
-
-# Define variables
-CONF_FILE="/etc/apache2/sites-available/nextcloud.conf"
-DOMAIN="cloud.amak.at"  # Replace with your actual domain
+source $1
 
 # Create new Apache configuration file for Nextcloud
 echo "Creating Apache configuration file for Nextcloud..."
 
-cat <<EOF > $CONF_FILE
-<VirtualHost *:80>
+cat <<EOF > /etc/apache2/sites-available/nextcloud.conf
+<VirtualHost *:$NC_PORT>
     ServerAdmin master@localhost
-    DocumentRoot /var/www/nextcloud
-    #ServerName $DOMAIN
+    DocumentRoot $WWW_DIR/nextcloud
+    #ServerName $FQ_DOMAIN
 
-    <Directory /var/www/nextcloud/>
+    <Directory $WWW_DIR/nextcloud/>
         Options +FollowSymlinks
         AllowOverride All
         Require all granted
-        SetEnv HOME /var/www/nextcloud
-        SetEnv HTTP_HOME /var/www/nextcloud
+        SetEnv HOME $WWW_DIR/nextcloud
+        SetEnv HTTP_HOME $WWW_DIR/nextcloud
     </Directory>
 
     ErrorLog \${APACHE_LOG_DIR}/error.log
@@ -29,6 +26,18 @@ cat <<EOF > $CONF_FILE
     </IfModule>
 
 </VirtualHost>
+EOF
+
+cat <<EOF > /etc/apache2/ports.conf
+Listen $NC_PORT
+
+<IfModule ssl_module>
+        Listen 443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+        Listen 443
+</IfModule>
 EOF
 
 # Enable the new site and required Apache modules

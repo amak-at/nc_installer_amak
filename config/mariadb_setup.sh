@@ -1,9 +1,5 @@
 #!/bin/bash
-
-# Define variables
-DB_NAME="nextcloud"
-DB_USER="nextclouduser"
-DB_PASS="asdf1234"
+source $1
 
 # Secure MariaDB Installation
 echo "Securing MariaDB installation..."
