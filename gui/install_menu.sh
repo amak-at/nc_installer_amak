@@ -69,7 +69,7 @@ then
             3) echo "You chose Option 3: installing dependencies";;
 
             4)  get_user_clear_input "FQ_DOMAIN" "Define your FQ-Domainname for your Nextcloud" "nextcloud.example.com"
-                get_user_clear_input "NC_PORT" "Define a Port on wich your Nextcloud is listening (recomended: 80)" "80"
+                get_user_clear_input "NC_PORT" "Define a Port on wich your Nextcloud is listening (recomended: 8080)" "8080"
                 get_user_clear_input "DB_NAME" "Define a database name for Nextcloud" "nextcloud" 
                 get_user_clear_input "DB_USER" "Define a database user for Nextcloud" "nextcloudDBuser"
                 get_user_clear_input "DB_PASS" "Define a database password for Nextcloud" "nextcloudDBpass"

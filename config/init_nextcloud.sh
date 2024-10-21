@@ -19,7 +19,7 @@ sudo -u www-data php8.2 occ config:system:set redis dbindex --value=0
 sudo -u www-data php8.2 occ config:system:set redis password --value=
 sudo -u www-data php8.2 occ config:system:set redis timeout --value=1.5
 
-(crontab -u www-data -l 2>/dev/null; echo "*/5  *  *  *  * php -f /var/www/nextcloud/cron.php") | crontab -u www-data -
+(crontab -u www-data -l 2>/dev/null; echo "*/5  *  *  *  * php8.2 -f /var/www/nextcloud/cron.php") | crontab -u www-data -
 
 
 systemctl reload apache2.service

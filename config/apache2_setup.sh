@@ -8,7 +8,7 @@ cat <<EOF > /etc/apache2/sites-available/nextcloud.conf
 <VirtualHost *:$NC_PORT>
     ServerAdmin master@localhost
     DocumentRoot $WWW_DIR/nextcloud
-    #ServerName $FQ_DOMAIN
+    ServerName $FQ_DOMAIN
 
     <Directory $WWW_DIR/nextcloud/>
         Options +FollowSymlinks
