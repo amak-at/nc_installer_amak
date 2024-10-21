@@ -18,6 +18,9 @@ apt install php8.2 libapache2-mod-php8.2 php8.2-zip php8.2-xml php8.2-mbstring p
 apt install mariadb-server -y
 apt install certbot python3-certbot-apache -y
 
+# install borgbackup
+apt install borgbackup -y
+
 #for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do 
 #    sudo apt-get remove $pkg; 
 #done
