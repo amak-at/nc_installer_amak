@@ -165,7 +165,7 @@ a2enmod mime
 
 echo "Enabeling done."
 
-if [ "$USE_REVERSE_PROXY" = "off"]; then
+if [ "$USE_REVERSE_PROXY" = "off" ]; then
     echo "No reverse Proxy in use. Create certificate.."
     certbot --apache -m $CERTBOT_EMAIL -d $NC_FQDN
     echo "Certificate for $NC_FQDN created."
@@ -179,6 +179,8 @@ echo "Nextcloud Apache configuration created successfully."
 
 # Configure Nextcloud
 echo "Configure Nextcloud"
+
+curl "http://$NC_FQDN:$NC_PORT"
 
 cd $NC_DIR
 sudo -u www-data php8.2 occ maintenance:repair --include-expensive
@@ -196,7 +198,7 @@ sudo -u www-data php8.2 occ config:system:set redis timeout --value=1.5
 sudo -u www-data php8.2 occ config:system:set trusted_domains 0 --value=localhost
 sudo -u www-data php8.2 occ config:system:set trusted_domains 1 --value=$NC_FQDN
 
-if [ "$USE_REVERSE_PROXY" = "on"]; then
+if [ "$USE_REVERSE_PROXY" = "on" ]; then
     sudo -u www-data php8.2 occ config:system:set trusted_proxies 0 --value=$REVERSE_PROXY_IP
 fi
 

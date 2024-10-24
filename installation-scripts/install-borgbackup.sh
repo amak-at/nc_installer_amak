@@ -7,7 +7,7 @@ echo "installation done."
 
 echo "Creating backup-script and run it..."
 mkdir -p $BACKUP_DIR/daten $BACKUP_TEMP_DIR $BACKUP_RESTORE_DIR
-./borgbackup_expect.sh $BACKUP_DIR $BACKUP_PASS
+./installation-scripts/borgbackup_expect.sh $BACKUP_DIR $BACKUP_PASS
 
 cat <<EOF > $BACKUP_SCRIPT_PATH
 #!/bin/bash
