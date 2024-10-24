@@ -5,6 +5,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-rm -R /home/data/nc-admin
+rm -R /home/data
 rm -R /var/www/nextcloud
-apt purge apache2 php* mariadb* -y
+apt purge apache2 php* mariadb* borgbackup -y

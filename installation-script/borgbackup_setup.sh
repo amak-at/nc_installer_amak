@@ -1,26 +1,17 @@
 #!/bin/bash
-#source $1
-CURRENT_DIR=$(pwd)
+source $1
 
-# helper envs
-NEXTCLOUD_DIR="/var/www/nextcloud"
-DB_NAME="nextcloud"
-DB_USER="nextcloudDBuser"
-DB_PASS="nextcloudDBpass"
-DATA_DIR="/home/data"
-# TODO made BACKUP_DIR configurable
-BACKUP_DIR="/mnt/sdb"
-ROOT_DIR="/root"
+echo "Installing borgbackup...."
+apt install borgbackup -y
+echo "installation done."
 
-# TODO made BACKUP_PW configurable
-BACKUP_PW="asdf1234"
+echo "Creating backup-script and run it..."
+mkdir -p $BACKUP_DIR/daten $BACKUP_TEMP_DIR $BACKUP_RESTORE_DIR
+./borgbackup_expect.sh $BACKUP_DIR $BACKUP_PASS
 
-mkdir -p $BACKUP_DIR/daten $ROOT_DIR/temp $ROOT_DIR/restore
-./borgbackup_expect.sh $BACKUP_DIR $BACKUP_PW
-
-cat <<EOF > $ROOT_DIR/backup.sh
+cat <<EOF > $BACKUP_SCRIPT_PATH
 #!/bin/bash
-export BORG_PASSPHRASE='$BACKUP_PW'
+export BORG_PASSPHRASE='$BACKUP_PASS'
 export BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes
 export BORG_RELOCATED_REPO_ACCESS_IS_OK=yes
 startTime=\$(date +%s)
@@ -29,15 +20,15 @@ currentDateReadable=\$(date --date @"\$startTime" +"%d.%m.%Y - %H:%M:%S")
 logDirectory="/var/log/"
 logFile="\${logDirectory}/\${currentDate}.log"
 backupDiscMount="$BACKUP_DIR/daten/"
-localBackupDir="$ROOT_DIR/temp"
+localBackupDir="$BACKUP_TEMP_DIR"
 borgRepository="\${backupDiscMount}/"
 borgBackupDirs="$DATA_DIR/ $NEXTCLOUD_DIR/ \$localBackupDir/"
 nextcloudFileDir='$NEXTCLOUD_DIR'
 webserverServiceName='apache2'
 webserverUser='www-data'
-nextcloudDatabase='$DB_NAME'
-dbUser='$DB_USER'
-dbPassword='$DB_PASS'
+nextcloudDatabase='$NC_DB_NAME'
+dbUser='$NC_DB_USER'
+dbPassword='$NC_DB_PASS'
 fileNameBackupDb='nextcloud-db.sql'
 if [ ! -d "\${logDirectory}" ]
 then
@@ -88,12 +79,14 @@ echo -e "Plattenbelegung:\n"
 df -h \${backupDiscMount}
 EOF
 
-chmod +x $ROOT_DIR/backup.sh
-cd $ROOT_DIR
+chmod +x $BACKUP_SCRIPT_PATH
+cd $BACKUP_ROOT_DIR
 ./backup.sh
 
-(crontab -l 2>/dev/null; echo "0 3 * * * $ROOT_DIR/backup.sh > /dev/null 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "$BACKUP_TIME_MINUTE $BACKUP_TIME_HOUR * * * $BACKUP_SCRIPT_PATH > /dev/null 2>&1") | crontab -
 
-cd $CURRENT_DIR
+cd $STARTING_DIR
+
+echo "Creating backup-script done."
 
 exit 0

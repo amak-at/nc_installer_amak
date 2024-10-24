@@ -7,7 +7,7 @@ CONF_FILE="$1"
 INPUT=$TEMP_DIR/menu.sh.$$
 OUTPUT=$TEMP_DIR/output.sh.$$
 
-backtitle_txt="[Nextcloud-Installer (c) Amak-AT]"
+backtitle_txt="[ Nextcloud-Installer (c) Amak-AT ]"
 declare -A nextcloud_settings
 declare -A backup_settings
 
