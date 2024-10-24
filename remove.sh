@@ -1,10 +1,19 @@
 #!/bin/bash
-# Check if the script is run as root
-if [[ $EUID -ne 0 ]]; then
-   echo "Please run as root!"
-   exit 1
-fi
+source $1
 
-rm -R /home/data/nc-admin
-rm -R /var/www/nextcloud
-apt purge apache2 php* mariadb* -y
+# Check if the script is run as root
+sudo -u www-data crontab -r
+crontab -r
+
+rm -R /tmp/latest*
+rm -R $TEMP_DIR
+rm -R $NC_DATA_DIR
+rm -R $NC_DIR
+rm -R $BACKUP_ROOTDIR
+rm -R $BACKUP_DIR/daten
+systemctl stop apache2.service
+rm -R /etc/apache2
+apt purge -y apache* php* mariadb* borgbackup certbot python3-certbot-apache
+
+
+exit 0

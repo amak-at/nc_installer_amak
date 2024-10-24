@@ -1,4 +1,0 @@
-trusted_domains (sudo -u www-data php8.2 occ config:system:set trusted_domains 0 --value=localhost)
-FQDM (cloud.amak.at)
-trusted_proxies (sudo -u www-data php8.2 occ config:system:set trusted_proxies 0 --value=192.168.0.20)
-certbot --apache -m email@example.at -d fqdm.example.at

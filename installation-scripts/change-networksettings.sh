@@ -9,15 +9,15 @@ network:
     ethernets:
         $SELECTED_INTERFACE:
             addresses:
-            - $IP_ADDR/$IP_SUBNET
+            - $NEW_IP_ADDR/$NEW_IP_SUBNET_PREFIX
             nameservers:
                 addresses:
-                - $DNS1
-                - $DNS2
+                - $NEW_IP_DNS1
+                - $NEW_IP_DNS2
                 search: []
             routes:
             -   to: default
-                via: $IP_GATEWAY
+                via: $NEW_IP_GATEWAY
     version: 2        
 EOF
 
@@ -27,7 +27,7 @@ sudo chmod 600 /etc/netplan/01-nc-netcnfg.yaml
 sudo netplan apply
 
 
-echo "The IP address $IP_ADDR/$IP_SUBNET has been assigned to $INTERFACE."
-echo "The DNS servers $DNS1 and $DNS2 have been configured."
+echo "The IP address $NEW_IP_ADDR/$NEW_IP_SUBNET_PREFIX has been assigned to $SELECTED_INTERFACE."
+echo "The DNS servers $NEW_IP_DNS1 and $NEW_IP_DNS2 have been configured."
 
 exit 0
