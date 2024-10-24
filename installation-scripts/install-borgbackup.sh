@@ -22,8 +22,8 @@ logFile="\${logDirectory}/\${currentDate}.log"
 backupDiscMount="$BACKUP_DIR/daten/"
 localBackupDir="$BACKUP_TEMP_DIR"
 borgRepository="\${backupDiscMount}/"
-borgBackupDirs="$DATA_DIR/ $NEXTCLOUD_DIR/ \$localBackupDir/"
-nextcloudFileDir='$NEXTCLOUD_DIR'
+borgBackupDirs="$NC_DATA_DIR/ $NC_DIR/ \$localBackupDir/"
+nextcloudFileDir='$NC_DIR'
 webserverServiceName='apache2'
 webserverUser='www-data'
 nextcloudDatabase='$NC_DB_NAME'
@@ -83,7 +83,7 @@ chmod +x $BACKUP_SCRIPT_PATH
 cd $BACKUP_ROOT_DIR
 ./backup.sh
 
-(crontab -l 2>/dev/null; echo "$BACKUP_TIME_MINUTE $BACKUP_TIME_HOUR * * * $BACKUP_SCRIPT_PATH > /dev/null 2>&1") | crontab -
+(echo "$BACKUP_TIME_MINUTE $BACKUP_TIME_HOUR * * * $BACKUP_SCRIPT_PATH > /dev/null 2>&1") | crontab -
 
 cd $STARTING_DIR
 

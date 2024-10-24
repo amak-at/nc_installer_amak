@@ -25,8 +25,8 @@ check_root
 # From now on with root permissions
 echo "Running install.sh as root..."
 
-CONF_FILE_EXAMPLE="./setup/setup-example.conf"
-CONF_FILE="$(pwd)/setup/setup.conf"
+CONF_FILE_EXAMPLE="./setup/config/setup-example.conf"
+CONF_FILE="$(pwd)/setup/config/setup.conf"
 
 cp $CONF_FILE_EXAMPLE $CONF_FILE
 
@@ -42,30 +42,8 @@ echo "installing dialog for GUI.."
 #apt-get install -y dialog > /dev/null 2>&1
 echo "Done. Starting GUI..."
 
-#./setup/dialog/menu.sh $CONF_FILE
+./setup/dialog/menu.sh $CONF_FILE
 
-###################
-# TESTING SECTION #
-###################
-source $CONF_FILE_EXAMPLE
-
-if [ "$CHANGE_HOSTNAME" = "on" ]; then
- ./installation-scripts/change-hostname.sh $CONF_FILE_EXAMPLE
-fi
-
-if [ "$CHANGE_NETWORKSETTINGS" = "on" ]; then
- ./installation-scripts/change-networksettings.sh $CONF_FILE_EXAMPLE
-
-fi
- 
-if [ "$INSTALL_NC" = "on" ]; then
- ./installation-scripts/install_nextcloud.sh $CONF_FILE_EXAMPLE
-
-fi
-
-if [ "$INSTALL_BACKUP" = "on" ]; then
- ./installation-scripts/install-borgbackup.sh $CONF_FILE_EXAMPLE
-fi
 #clear
 #./gui/install_menu.sh $ENV_DIR
 #rm -R $ENV_DIR

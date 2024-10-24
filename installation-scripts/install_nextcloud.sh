@@ -95,7 +95,7 @@ chown -R www-data:www-data $NC_DIR
 chmod -R 755 $NC_DIR
 
 #define autoconfig for skipping First setup Screen
-cat <<EOF > $NC_AUTOPHP_CONFIG_FILE
+cat <<EOF > $NC_AUTOCONFIG_FILE
 <?php
 \$AUTOCONFIG = array(
   "dbtype"        => "mysql",
@@ -106,11 +106,11 @@ cat <<EOF > $NC_AUTOPHP_CONFIG_FILE
   "dbtableprefix" => "",
   "adminlogin"    => "$NC_ADMIN_USER",
   "adminpass"     => "$NC_ADMIN_USER_PASS",
-  "directory"     => "$NC_ADMIN_USER",
+  "directory"     => "$NC_DATA_DIR",
 );
 EOF
 
-chown www-data:www-data $NC_AUTOPHP_CONFIG_FILE
+chown www-data:www-data $NC_AUTOCONFIG_FILE
 
 echo "Finished installing Nextcloud."
 
@@ -180,7 +180,7 @@ echo "Nextcloud Apache configuration created successfully."
 # Configure Nextcloud
 echo "Configure Nextcloud"
 
-curl "http://$NC_FQDN:$NC_PORT"
+curl "http://localhost:$NC_PORT"
 
 cd $NC_DIR
 sudo -u www-data php8.2 occ maintenance:repair --include-expensive
@@ -203,7 +203,7 @@ if [ "$USE_REVERSE_PROXY" = "on" ]; then
 fi
 
 
-(crontab -u www-data -l 2>/dev/null; echo "*/5  *  *  *  * php8.2 -f $NC_DIR/cron.php") | crontab -u www-data -
+(echo "*/5  *  *  *  * php8.2 -f $NC_DIR/cron.php") | crontab -u www-data -
 
 echo "Finished configuring Nextcloud."
 echo "Restart Apache..."
