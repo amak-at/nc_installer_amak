@@ -38,8 +38,8 @@ mkdir $TEMP_DIR
 find ./ -type f -name "*.sh" -exec chmod +x {} \;
 
 echo "installing dialog for GUI.."
-#apt-get update > /dev/null 2>&1
-#apt-get install -y dialog > /dev/null 2>&1
+apt-get update > /dev/null 2>&1
+apt-get install -y dialog > /dev/null 2>&1
 echo "Done. Starting GUI..."
 
 ./setup/dialog/menu.sh $CONF_FILE
