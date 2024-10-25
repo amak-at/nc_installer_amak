@@ -103,7 +103,7 @@ cat <<EOF > $NC_AUTOCONFIG_FILE
   "dbuser"        => "$NC_DB_USER",
   "dbpass"        => "$NC_DB_PASS",
   "dbhost"        => "localhost",
-  "dbtableprefix" => "",
+  "dbtableprefix" => "oc_",
   "adminlogin"    => "$NC_ADMIN_USER",
   "adminpass"     => "$NC_ADMIN_USER_PASS",
   "directory"     => "$NC_DATA_DIR",
