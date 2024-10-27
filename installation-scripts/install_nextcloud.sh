@@ -2,21 +2,31 @@
 source $1
 
 #install cron and curl
-apt-get install -y --no-install-recommends apt-utils cron curl
+echo "install apt-utils cron curl..."
+apt-get install -y --no-install-recommends apt-utils cron curl > /dev/null 2>&1
 
 #install apache2
-apt install apache2 -y
+echo "install apache2..."
+apt install apache2 -y > /dev/null 2>&1
 
 #install php8.3
-apt install software-properties-common -y
-add-apt-repository ppa:ondrej/php -y
-apt update
-apt install php8.2 libapache2-mod-php8.2 php8.2-zip php8.2-xml php8.2-mbstring php8.2-gd php8.2-curl php8.2-imagick libmagickcore-6.q16-6-extra php8.2-intl php8.2-bcmath php8.2-gmp php8.2-cli php8.2-mysql php8.2-zip php8.2-gd  php8.2-mbstring php8.2-curl php8.2-xml php-pear unzip nano php8.2-apcu redis-server ufw php8.2-redis php8.2-smbclient php8.2-ldap php8.2-bz2 -y
+echo "install PHP 8.2 ..."
+apt install software-properties-common -y > /dev/null 2>&1
+add-apt-repository ppa:ondrej/php -y > /dev/null 2>&1
+apt update > /dev/null 2>&1
+apt install -y php8.2 libapache2-mod-php8.2 php8.2-zip php8.2-xml php8.2-mbstring php8.2-gd php8.2-curl php8.2-imagick > /dev/null 2>&1
+apt install -y libmagickcore-6.q16-6-extra php8.2-intl php8.2-bcmath php8.2-gmp php8.2-cli php8.2-mysql php8.2-zip php8.2-gd  php8.2-mbstring php8.2-curl > /dev/null 2>&1
+apt install -y php8.2-xml php-pear unzip nano php8.2-apcu redis-server ufw php8.2-redis php8.2-smbclient php8.2-ldap php8.2-bz2 > /dev/null 2>&1
+echo "PHP 8.2 done!"
+
 #isntall mariadb
-apt install mariadb-server -y
+echo "install mariaDB..."
+apt install mariadb-server -y >/dev/null 2>&1
+echo "MariaDB install done!"
+
 
 if [ "$USE_REVERSE_PROXY" = "off"]; then
-    apt install certbot python3-certbot-apache -y
+    apt install certbot python3-certbot-apache -y > /dev/null 2>&1
 fi
 
 # Secure MariaDB Installation
@@ -86,7 +96,10 @@ echo "PHP configuration complete."
 echo "Install Nextcloud..."
 
 cd /tmp && wget https://download.nextcloud.com/server/releases/latest.zip
-unzip latest.zip
+echo "unzip Nextcloud..."
+unzip latest.zip >/dev/null
+echo "unzipping done!"
+
 mv nextcloud $NC_BASE/
 
 mkdir $NC_DATA_DIR
@@ -95,6 +108,7 @@ chown -R www-data:www-data $NC_DIR
 chmod -R 755 $NC_DIR
 
 #define autoconfig for skipping First setup Screen
+echo "creating $NC_AUTOCONFIG_FILE..."
 cat <<EOF > $NC_AUTOCONFIG_FILE
 <?php
 \$AUTOCONFIG = array(
@@ -111,6 +125,8 @@ cat <<EOF > $NC_AUTOCONFIG_FILE
 EOF
 
 chown www-data:www-data $NC_AUTOCONFIG_FILE
+
+echo "$NC_AUTOCONFIG_FILE done!"
 
 echo "Finished installing Nextcloud."
 
@@ -178,16 +194,24 @@ systemctl restart apache2
 echo "Nextcloud Apache configuration created successfully."
 
 # Configure Nextcloud
-echo "Configure Nextcloud"
+echo "Configure Nextcloud...."
 
+echo "Sending init request to Nextcloud..."
 curl "http://localhost:$NC_PORT"
 
 cd $NC_DIR
+
+#default start settings
 sudo -u www-data php8.2 occ maintenance:repair --include-expensive
 sudo -u www-data php8.2 occ db:add-missing-indices
 sudo -u www-data php8.2 occ config:system:set maintenance_window_start --type=integer --value=1
 sudo -u www-data php8.2 occ config:system:set default_phone_region --value="AT"
+
+#chronjob
 sudo -u www-data php8.2 occ background:cron
+(echo "*/5  *  *  *  * php8.2 -f $NC_DIR/cron.php") | crontab -u www-data -
+
+#setting memchache redis
 sudo -u www-data php8.2 occ config:system:set memcache.local --type=string --value="\OC\Memcache\Redis"
 sudo -u www-data php8.2 occ config:system:set memcache.locking --type=string --value="\OC\Memcache\Redis"
 sudo -u www-data php8.2 occ config:system:set redis host --value=localhost
@@ -195,15 +219,66 @@ sudo -u www-data php8.2 occ config:system:set redis port --value=6379
 sudo -u www-data php8.2 occ config:system:set redis dbindex --value=0
 sudo -u www-data php8.2 occ config:system:set redis password --value=
 sudo -u www-data php8.2 occ config:system:set redis timeout --value=1.5
+
+#trusted domains
 sudo -u www-data php8.2 occ config:system:set trusted_domains 0 --value=localhost
 sudo -u www-data php8.2 occ config:system:set trusted_domains 1 --value=$NC_FQDN
 
+# trusted proxies
 if [ "$USE_REVERSE_PROXY" = "on" ]; then
-    sudo -u www-data php8.2 occ config:system:set trusted_proxies 0 --value=$REVERSE_PROXY_IP
+    sudo -u www-data php8.2 occ config:system:set trusted_proxies 1 --value=$REVERSE_PROXY_IP
 fi
 
+#set E-Mail for NC
+sudo -u www-data php8.2 occ config:system:set mail_from_address --value=$NC_FROM_EMAIL_ADDRESS
+sudo -u www-data php8.2 occ config:system:set mail_smtpmode --value=smpt
+sudo -u www-data php8.2 occ config:system:set mail_senmailmode --value=smpt
+sudo -u www-data php8.2 occ config:system:set mail_domain --value=$NC_EMAIL_DOMAIN
+sudo -u www-data php8.2 occ config:system:set mail_smpthost --value=$NC_SMPT_HOST
+sudo -u www-data php8.2 occ config:system:set mail_smptport --value=$NC_SMPT_PORT
+sudo -u www-data php8.2 occ config:system:set mail_smptauth --value=1
+sudo -u www-data php8.2 occ config:system:set mail_smptname --value=$NC_EMAIL_ADDRESS
+sudo -u www-data php8.2 occ config:system:set mail_smptpassword --value=$NC_EMAIL_PASSWORD
 
-(echo "*/5  *  *  *  * php8.2 -f $NC_DIR/cron.php") | crontab -u www-data -
+
+# theming
+sudo -u www-data php8.2 occ theming:config name "$NC_NAME"
+sudo -u www-data php8.2 occ theming:config slogan "$NC_SLOGAN"
+sudo -u www-data php8.2 occ theming:config url "https://$NC_FQDN"
+
+
+# installing default apps
+sudo -u www-data php8.2 occ app:install calendar
+sudo -u www-data php8.2 occ app:install contacts
+sudo -u www-data php8.2 occ app:install mail
+sudo -u www-data php8.2 occ app:install passwords
+sudo -u www-data php8.2 occ app:install groupfolders
+
+# memories app
+sudo apt install -y ffmpeg > /dev/null 2>&1
+sudo -u www-data php8.2 occ app:install memories
+sudo -u www-data php8.2 occ app:install previewgenerator
+sudo -u www-data php8.2 occ app:enable recognize
+
+sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 0 --value=OC\\Preview\\Image
+sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 1 --value=OC\\Preview\\HEIC
+sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 2 --value=OC\\Preview\\TIFF
+sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 3 --value=OC\\Preview\\Movie
+
+sudo -u www-data php8.2 occ maintenance:repair --include-expensive
+sudo -u www-data php8.2 occ memories:index --force 
+sudo -u www-data php8.2 occ db:add-missing-indices
+
+
+#disabled - takes to long for testing
+# sudo -u www-data php8.2 occ memories:places-setup
+
+
+# spreed = talk app
+sudo -u www-data php8.2 occ app:install spreed
+
+# onlyoffice
+sudo -u www-data php8.2 occ app:install onlyoffice
 
 echo "Finished configuring Nextcloud."
 echo "Restart Apache..."
