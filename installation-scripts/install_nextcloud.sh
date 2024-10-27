@@ -230,52 +230,61 @@ if [ "$USE_REVERSE_PROXY" = "on" ]; then
 fi
 
 #set E-Mail for NC
-sudo -u www-data php8.2 occ config:system:set mail_from_address --value=$NC_FROM_EMAIL_ADDRESS
-sudo -u www-data php8.2 occ config:system:set mail_smtpmode --value=smpt
-sudo -u www-data php8.2 occ config:system:set mail_senmailmode --value=smpt
-sudo -u www-data php8.2 occ config:system:set mail_domain --value=$NC_EMAIL_DOMAIN
-sudo -u www-data php8.2 occ config:system:set mail_smpthost --value=$NC_SMPT_HOST
-sudo -u www-data php8.2 occ config:system:set mail_smptport --value=$NC_SMPT_PORT
-sudo -u www-data php8.2 occ config:system:set mail_smptauth --value=1
-sudo -u www-data php8.2 occ config:system:set mail_smptname --value=$NC_EMAIL_ADDRESS
-sudo -u www-data php8.2 occ config:system:set mail_smptpassword --value=$NC_EMAIL_PASSWORD
-
+    if [ "$NC_SETUP_EMAIL" = "on" ]; then
+    sudo -u www-data php8.2 occ config:system:set mail_from_address --value=$NC_FROM_EMAIL_ADDRESS
+    sudo -u www-data php8.2 occ config:system:set mail_smtpmode --value=smpt
+    sudo -u www-data php8.2 occ config:system:set mail_senmailmode --value=smpt
+    sudo -u www-data php8.2 occ config:system:set mail_domain --value=$NC_EMAIL_DOMAIN
+    sudo -u www-data php8.2 occ config:system:set mail_smpthost --value=$NC_SMPT_HOST
+    sudo -u www-data php8.2 occ config:system:set mail_smptport --value=$NC_SMPT_PORT
+    sudo -u www-data php8.2 occ config:system:set mail_smptauth --value=1
+    sudo -u www-data php8.2 occ config:system:set mail_smptname --value=$NC_EMAIL_ADDRESS
+    sudo -u www-data php8.2 occ config:system:set mail_smptpassword --value=$NC_EMAIL_PASSWORD
+fi
 
 # theming
-sudo -u www-data php8.2 occ theming:config name "$NC_NAME"
-sudo -u www-data php8.2 occ theming:config slogan "$NC_SLOGAN"
-sudo -u www-data php8.2 occ theming:config url "https://$NC_FQDN"
-
+if [ "$NC_ADAPT_THEMING" = "on" ]; then
+    sudo -u www-data php8.2 occ theming:config name "$NC_NAME"
+    sudo -u www-data php8.2 occ theming:config slogan "$NC_SLOGAN"
+    sudo -u www-data php8.2 occ theming:config url "https://$NC_FQDN"
+fi
 
 # installing default apps
-sudo -u www-data php8.2 occ app:install calendar
-sudo -u www-data php8.2 occ app:install contacts
-sudo -u www-data php8.2 occ app:install mail
-sudo -u www-data php8.2 occ app:install passwords
-sudo -u www-data php8.2 occ app:install groupfolders
+if [ "$INSTALL_DEFAULT_APPS" = "on" ]; then
+    sudo -u www-data php8.2 occ app:install calendar
+    sudo -u www-data php8.2 occ app:install contacts
+    sudo -u www-data php8.2 occ app:install mail
+    sudo -u www-data php8.2 occ app:install passwords
+    sudo -u www-data php8.2 occ app:install groupfolders
+fi
 
 # memories app
-sudo apt install -y ffmpeg > /dev/null 2>&1
-sudo -u www-data php8.2 occ app:install memories
-sudo -u www-data php8.2 occ app:install previewgenerator
-sudo -u www-data php8.2 occ app:enable recognize
+if [ "$INSTA__MEMORIES" = "on" ]; then
+    sudo apt install -y ffmpeg > /dev/null 2>&1
+    sudo -u www-data php8.2 occ app:install memories
+    sudo -u www-data php8.2 occ app:install previewgenerator
+    sudo -u www-data php8.2 occ app:enable recognize
 
-sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 0 --value=OC\\Preview\\Image
-sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 1 --value=OC\\Preview\\HEIC
-sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 2 --value=OC\\Preview\\TIFF
-sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 3 --value=OC\\Preview\\Movie
+    sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 0 --value=OC\\Preview\\Image
+    sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 1 --value=OC\\Preview\\HEIC
+    sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 2 --value=OC\\Preview\\TIFF
+    sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 3 --value=OC\\Preview\\Movie
 
-sudo -u www-data php8.2 occ maintenance:repair --include-expensive
-sudo -u www-data php8.2 occ memories:index --force 
-sudo -u www-data php8.2 occ db:add-missing-indices
+    sudo -u www-data php8.2 occ maintenance:repair --include-expensive
+    sudo -u www-data php8.2 occ memories:index --force 
+    sudo -u www-data php8.2 occ db:add-missing-indices
+
+    #disabled - takes to long for testing
+    # sudo -u www-data php8.2 occ memories:places-setup
+fi
 
 
-#disabled - takes to long for testing
-# sudo -u www-data php8.2 occ memories:places-setup
 
 
 # spreed = talk app
-sudo -u www-data php8.2 occ app:install spreed
+if [ "$INSTALL_TALK" = "on" ]; then
+    sudo -u www-data php8.2 occ app:install spreed
+fi
 
 if [ "$INSTALL_ONLYOFFICE" = "on" ]; then
     # onlyoffice
