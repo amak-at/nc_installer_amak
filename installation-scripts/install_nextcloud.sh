@@ -277,8 +277,14 @@ sudo -u www-data php8.2 occ db:add-missing-indices
 # spreed = talk app
 sudo -u www-data php8.2 occ app:install spreed
 
-# onlyoffice
-sudo -u www-data php8.2 occ app:install onlyoffice
+if [ "$INSTALL_ONLYOFFICE" = "on" ]; then
+    # onlyoffice
+    sudo -u www-data php8.2 occ app:install onlyoffice
+    sudo -u www-data php occ config:app:set onlyoffice DocumentServerUrl --value=https://$OF_FQDN
+    sudo -u www-data php occ config:app:set onlyoffice jwt_secret --value=$OF_JWT
+    sudo -u www-data php8.2 occ config:system:set onlyoffice wt_secret --value=$OF_JWT
+    sudo -u www-data php8.2 occ config:system:set onlyoffice jwt_header --value=Authorization
+fi
 
 echo "Finished configuring Nextcloud."
 echo "Restart Apache..."

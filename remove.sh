@@ -16,6 +16,12 @@ rm -R $BACKUP_DIR/daten
 systemctl stop apache2.service
 rm -R /etc/apache2
 
+docker kill onlyoffice-document-server
+docker container prune <<EOF
+y
+EOF
+sleep 2
+
 echo "Removing installed packages....."
 apt purge -y apache* php* borgbackup certbot python3-certbot-apache ffmpeg > /dev/null 2>&1
 apt purge -y maria*

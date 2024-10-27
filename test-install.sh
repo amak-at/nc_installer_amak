@@ -50,10 +50,13 @@ if [ "$CHANGE_NETWORKSETTINGS" = "on" ]; then
  ./installation-scripts/change-networksettings.sh $TEST_CONF_FILE
 
 fi
+
+if [ "$INSTALL_ONLYOFFICE" = "on" ]; then
+ ./installation-scripts/install_onlyoffice.sh $TEST_CONF_FILE
+fi
  
 if [ "$INSTALL_NC" = "on" ]; then
  ./installation-scripts/install_nextcloud.sh $TEST_CONF_FILE
-
 fi
 
 if [ "$INSTALL_BACKUP" = "on" ]; then
