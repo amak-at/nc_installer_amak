@@ -196,6 +196,8 @@ sudo -u www-data php8.2 occ config:system:set redis timeout --value=1.5
 #trusted domains
 sudo -u www-data php8.2 occ config:system:set trusted_domains 0 --value=localhost
 sudo -u www-data php8.2 occ config:system:set trusted_domains 1 --value=$NC_FQDN
+sudo -u www-data php8.2 occ config:system:set trusted_domains 1 --value=$LOCAL_NETWORK_IP
+
 
 # trusted proxies
 if [ "$INSTALL_REVERSE_PROXY" = "on" ]; then
