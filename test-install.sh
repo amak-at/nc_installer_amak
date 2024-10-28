@@ -42,7 +42,7 @@ source $TEST_CONF_FILE
 
 mkdir $TEMP_DIR
 
-./installation-scripts/install_dependencies.sh $TEST_CONF_FILE
+./installation-scripts/install-dependencies.sh $TEST_CONF_FILE
 
 if [ "$CHANGE_HOSTNAME" = "on" ]; then
  ./installation-scripts/change-hostname.sh $TEST_CONF_FILE
@@ -54,11 +54,11 @@ if [ "$CHANGE_NETWORKSETTINGS" = "on" ]; then
 fi
 
 if [ "$INSTALL_ONLYOFFICE" = "on" ]; then
- ./installation-scripts/install_onlyoffice.sh $TEST_CONF_FILE
+ ./installation-scripts/install-onlyoffice.sh $TEST_CONF_FILE
 fi
  
 if [ "$INSTALL_NC" = "on" ]; then
- ./installation-scripts/install_nextcloud.sh $TEST_CONF_FILE
+ ./installation-scripts/install-nextcloud.sh $TEST_CONF_FILE
 fi
 
 if [ "$INSTALL_BACKUP" = "on" ]; then
