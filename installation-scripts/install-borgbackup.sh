@@ -1,15 +1,11 @@
 #!/bin/bash
 source $1
 
-echo "Installing borgbackup...."
-apt install borgbackup -y > /dev/null 2>&1
-echo "installation done."
-
 echo "Creating backup-script and run it..."
 
-mkdir -p $BACKUP_DIR/daten $BACKUP_TEMP_DIR $BACKUP_RESTORE_DIR
+mkdir -p $BACKUP_DIR/daten $BACKUP_TEMP_DIR $BACKUP_RESTORE_DIR $BACKUP_LOG_DIR
 
-./installation-scripts/borgbackup_expect.sh $BACKUP_DIR $BACKUP_PASS
+./installation-scripts/borgbackup_expect.sh $BACKUP_DIR $BACKUP_PASS > /dev/null 2>&1
 
 cat <<EOF > $BACKUP_SCRIPT_PATH
 #!/bin/bash
@@ -19,7 +15,7 @@ export BORG_RELOCATED_REPO_ACCESS_IS_OK=yes
 startTime=\$(date +%s)
 currentDate=\$(date --date @"\$startTime" +"%Y%m%d_%H%M%S")
 currentDateReadable=\$(date --date @"\$startTime" +"%d.%m.%Y - %H:%M:%S")
-logDirectory="/var/log/"
+logDirectory="$BACKUP_LOG_DIR/"
 logFile="\${logDirectory}/\${currentDate}.log"
 backupDiscMount="$BACKUP_DIR/daten/"
 localBackupDir="$BACKUP_TEMP_DIR"
@@ -49,21 +45,21 @@ then
     errorecho "ERROR: The local backup directory \${localBackupDir} does not exist!"
     exit 1
 fi
-echo -e "\n###### Start des Backups: \${currentDateReadable} ######\n"
-echo -e "Daten werden zusammengestellt"
+echo -e "\n###### Starting backups: \${currentDateReadable} ######\n"
+echo -e "collecting data..."
 dpkg --get-selections > "\${localBackupDir}/software.list"
 sudo -u "\${webserverUser}" php8.2 \${nextcloudFileDir}/occ maintenance:mode --on
-echo "apache2 wird gestoppt"
+echo "stop apache2..."
 systemctl stop "\${webserverServiceName}"
-echo "Datenbanksicherung wird erstellt"
+echo "creating database backup..."
 mysqldump --single-transaction --routines -h localhost -u "\${dbUser}" -p"\${dbPassword}" "\${nextcloudDatabase}" > "\${localBackupDir}/\${fileNameBackupDb}"
-echo -e "\nBackup mit borgbackup"
+echo -e "\nBackup with borgbackup"
 borg create --stats \
     \$borgRepository::"\${currentDate}" \
     \$localBackupDir \
     \$borgBackupDirs 
 echo
-echo "webserver wird gestartet"
+echo "starting webserver"
 systemctl start "\${webserverServiceName}"
 sudo -u "\${webserverUser}" php8.2 \${nextcloudFileDir}/occ maintenance:mode --off
 rm "\${localBackupDir}"/software.list
@@ -76,8 +72,8 @@ durationSec=\$((duration % 60))
 durationMin=\$(((duration / 60) % 60))
 durationHour=\$((duration / 3600))
 durationReadable=\$(printf "%02d Stunden %02d Minuten %02d Sekunden" \$durationHour \$durationMin \$durationSec)
-echo -e "\n###### Ende des Backups: \${endDateReadable} (\${durationReadable}) ######\n"
-echo -e "Plattenbelegung:\n"
+echo -e "\n###### End of backups: \${endDateReadable} (\${durationReadable}) ######\n"
+echo -e "Disk usage:\n"
 df -h \${backupDiscMount}
 EOF
 
