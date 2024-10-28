@@ -25,9 +25,9 @@ apt install mariadb-server -y >/dev/null 2>&1
 echo "MariaDB install done!"
 
 
-if [ "$USE_REVERSE_PROXY" = "off"]; then
-    apt install certbot python3-certbot-apache -y > /dev/null 2>&1
-fi
+#if [ "$INSTALL_REVERSE_PROXY" = "off" ]; then
+#    apt install certbot python3-certbot-apache -y > /dev/null 2>&1
+#fi
 
 # Secure MariaDB Installation
 echo "Securing MariaDB installation..."
@@ -135,7 +135,7 @@ echo "Creating Apache configuration file for Nextcloud..."
 
 cat <<EOF > /etc/apache2/sites-available/nextcloud.conf
 <VirtualHost *:$NC_PORT>
-    ServerAdmin master@localhost
+    # ServerAdmin master@localhost
     DocumentRoot $NC_DIR
     ServerName $NC_FQDN
 
@@ -169,6 +169,7 @@ Listen $NC_PORT
 </IfModule>
 EOF
 
+
 # Enable the new site and required Apache modules
 echo "Enabling Nextcloud site and required modules..."
 a2ensite nextcloud.conf
@@ -181,11 +182,11 @@ a2enmod mime
 
 echo "Enabeling done."
 
-if [ "$USE_REVERSE_PROXY" = "off" ]; then
-    echo "No reverse Proxy in use. Create certificate.."
-    certbot --apache -m $CERTBOT_EMAIL -d $NC_FQDN
-    echo "Certificate for $NC_FQDN created."
-fi
+#if [ "$INSTALL_REVERSE_PROXY" = "off" ]; then
+    # echo "No reverse Proxy in use. Create certificate.."
+    # certbot --apache -m $CERTBOT_EMAIL -d $NC_FQDN
+    # echo "Certificate for $NC_FQDN created."
+#fi
 
 # Restart Apache to apply changes
 echo "Restarting Apache..."
@@ -225,7 +226,7 @@ sudo -u www-data php8.2 occ config:system:set trusted_domains 0 --value=localhos
 sudo -u www-data php8.2 occ config:system:set trusted_domains 1 --value=$NC_FQDN
 
 # trusted proxies
-if [ "$USE_REVERSE_PROXY" = "on" ]; then
+if [ "$INSTALL_REVERSE_PROXY" = "on" ]; then
     sudo -u www-data php8.2 occ config:system:set trusted_proxies 1 --value=$REVERSE_PROXY_IP
 fi
 
@@ -270,7 +271,6 @@ if [ "$INSTA__MEMORIES" = "on" ]; then
     sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 2 --value=OC\\Preview\\TIFF
     sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 3 --value=OC\\Preview\\Movie
 
-    sudo -u www-data php8.2 occ maintenance:repair --include-expensive
     sudo -u www-data php8.2 occ memories:index --force 
     sudo -u www-data php8.2 occ db:add-missing-indices
 
@@ -294,6 +294,9 @@ if [ "$INSTALL_ONLYOFFICE" = "on" ]; then
     sudo -u www-data php8.2 occ config:system:set onlyoffice wt_secret --value=$OF_JWT
     sudo -u www-data php8.2 occ config:system:set onlyoffice jwt_header --value=Authorization
 fi
+
+sudo -u www-data php8.2 occ maintenance:repair --include-expensive
+sudo -u www-data php8.2 occ db:add-missing-indices
 
 echo "Finished configuring Nextcloud."
 echo "Restart Apache..."

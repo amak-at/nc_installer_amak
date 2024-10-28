@@ -2,11 +2,13 @@
 source $1
 
 echo "Installing borgbackup...."
-apt install borgbackup -y
+apt install borgbackup -y > /dev/null 2>&1
 echo "installation done."
 
 echo "Creating backup-script and run it..."
+
 mkdir -p $BACKUP_DIR/daten $BACKUP_TEMP_DIR $BACKUP_RESTORE_DIR
+
 ./installation-scripts/borgbackup_expect.sh $BACKUP_DIR $BACKUP_PASS
 
 cat <<EOF > $BACKUP_SCRIPT_PATH
