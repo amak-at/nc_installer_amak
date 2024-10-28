@@ -1,6 +1,11 @@
 #!/bin/bash
 source $1
- 
+
+echo "Update system"
+apt update -y > /dev/null
+apt upgrade -y > /dev/null
+echo "Updateing done!"
+
 if [ "$INSTALL_NC" = "on" ]; then
     #install cron and curl
     echo "install apt-utils cron curl..."
@@ -29,7 +34,9 @@ if [ "$INSTALL_NC" = "on" ]; then
     #    apt install certbot python3-certbot-apache -y > /dev/null 2>&1
     #fi
     if [ "$INSTALL_MEMORIES" = "on" ]; then
+        echo "installing ffmpeg for memories app"
         sudo apt install -y ffmpeg > /dev/null 2>&1
+        echo "installation ffmpeg done!"
     fi
 fi
 

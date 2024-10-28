@@ -13,7 +13,6 @@ fi
  
 if [ "$INSTALL_NC" = "on" ]; then
     sudo -u www-data crontab -r
-    rm -R /tmp/latest*
     rm -R $NC_DATA_DIR
     rm -R $NC_DIR
     systemctl stop apache2.service
@@ -21,7 +20,8 @@ if [ "$INSTALL_NC" = "on" ]; then
 
     echo "Removing NC-installed packages....."
     apt purge -y apache* php* certbot python3-certbot-apache ffmpeg > /dev/null 2>&1
-    apt purge -y maria*
+    rm -R /var/lib/mysql
+    apt purge -y maria* > /dev/null 2>&1
 
     echo "Removing NC-installation done!"
 fi

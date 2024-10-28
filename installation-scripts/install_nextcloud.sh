@@ -67,7 +67,7 @@ echo "PHP configuration complete."
 # Download lastest nextcloud version
 echo "Install Nextcloud..."
 
-cd /tmp && wget https://download.nextcloud.com/server/releases/latest.zip
+cd $TEMP_DIR && wget https://download.nextcloud.com/server/releases/latest.zip
 echo "unzip Nextcloud..."
 unzip latest.zip >/dev/null
 echo "unzipping done!"
@@ -172,83 +172,81 @@ echo "Configure Nextcloud...."
 echo "Sending init request to Nextcloud..."
 curl "http://localhost:$NC_PORT"
 
-cd $NC_DIR
-
 #default start settings
-sudo -u www-data php8.2 occ maintenance:repair --include-expensive
-sudo -u www-data php8.2 occ db:add-missing-indices
-sudo -u www-data php8.2 occ config:system:set maintenance_window_start --type=integer --value=1
-sudo -u www-data php8.2 occ config:system:set default_phone_region --value="AT"
+$NC_OCC maintenance:repair --include-expensive
+$NC_OCC db:add-missing-indices
+$NC_OCC config:system:set maintenance_window_start --type=integer --value=1
+$NC_OCC config:system:set default_phone_region --value="AT"
 
 #chronjob
-sudo -u www-data php8.2 occ background:cron
+$NC_OCC background:cron
 (echo "*/5  *  *  *  * php8.2 -f $NC_DIR/cron.php") | crontab -u www-data -
 
 #setting memchache redis
-sudo -u www-data php8.2 occ config:system:set memcache.local --type=string --value="\OC\Memcache\Redis"
-sudo -u www-data php8.2 occ config:system:set memcache.locking --type=string --value="\OC\Memcache\Redis"
-sudo -u www-data php8.2 occ config:system:set redis host --value=localhost
-sudo -u www-data php8.2 occ config:system:set redis port --value=6379
-sudo -u www-data php8.2 occ config:system:set redis dbindex --value=0
-sudo -u www-data php8.2 occ config:system:set redis password --value=
-sudo -u www-data php8.2 occ config:system:set redis timeout --value=1.5
+$NC_OCC config:system:set memcache.local --type=string --value="\OC\Memcache\Redis"
+$NC_OCC config:system:set memcache.locking --type=string --value="\OC\Memcache\Redis"
+$NC_OCC config:system:set redis host --value=localhost
+$NC_OCC config:system:set redis port --value=6379
+$NC_OCC config:system:set redis dbindex --value=0
+$NC_OCC config:system:set redis password --value=
+$NC_OCC config:system:set redis timeout --value=1.5
 
 #trusted domains
-sudo -u www-data php8.2 occ config:system:set trusted_domains 0 --value=localhost
-sudo -u www-data php8.2 occ config:system:set trusted_domains 1 --value=$NC_FQDN
-sudo -u www-data php8.2 occ config:system:set trusted_domains 1 --value=$LOCAL_NETWORK_IP
+$NC_OCC config:system:set trusted_domains 0 --value=localhost
+$NC_OCC config:system:set trusted_domains 1 --value=$NC_FQDN
+$NC_OCC config:system:set trusted_domains 2 --value=$LOCAL_NETWORK_IP
 
 
 # trusted proxies
 if [ "$INSTALL_REVERSE_PROXY" = "on" ]; then
-    sudo -u www-data php8.2 occ config:system:set trusted_proxies 1 --value=$REVERSE_PROXY_IP
+    $NC_OCC config:system:set trusted_proxies 1 --value=$REVERSE_PROXY_IP
 fi
 
 #set E-Mail for NC
     if [ "$NC_SETUP_EMAIL" = "on" ]; then
-    sudo -u www-data php8.2 occ config:system:set mail_from_address --value=$NC_FROM_EMAIL_ADDRESS
-    sudo -u www-data php8.2 occ config:system:set mail_smtpmode --value=smpt
-    sudo -u www-data php8.2 occ config:system:set mail_senmailmode --value=smpt
-    sudo -u www-data php8.2 occ config:system:set mail_domain --value=$NC_EMAIL_DOMAIN
-    sudo -u www-data php8.2 occ config:system:set mail_smpthost --value=$NC_SMPT_HOST
-    sudo -u www-data php8.2 occ config:system:set mail_smptport --value=$NC_SMPT_PORT
-    sudo -u www-data php8.2 occ config:system:set mail_smptauth --value=1
-    sudo -u www-data php8.2 occ config:system:set mail_smptname --value=$NC_EMAIL_ADDRESS
-    sudo -u www-data php8.2 occ config:system:set mail_smptpassword --value=$NC_EMAIL_PASSWORD
+    $NC_OCC config:system:set mail_from_address --value=$NC_FROM_EMAIL_ADDRESS
+    $NC_OCC config:system:set mail_smtpmode --value=smpt
+    $NC_OCC config:system:set mail_senmailmode --value=smpt
+    $NC_OCC config:system:set mail_domain --value=$NC_EMAIL_DOMAIN
+    $NC_OCC config:system:set mail_smpthost --value=$NC_SMPT_HOST
+    $NC_OCC config:system:set mail_smptport --value=$NC_SMPT_PORT
+    $NC_OCC config:system:set mail_smptauth --value=1
+    $NC_OCC config:system:set mail_smptname --value=$NC_EMAIL_ADDRESS
+    $NC_OCC config:system:set mail_smptpassword --value=$NC_EMAIL_PASSWORD
 fi
 
 # theming
 if [ "$NC_ADAPT_THEMING" = "on" ]; then
-    sudo -u www-data php8.2 occ theming:config name "$NC_NAME"
-    sudo -u www-data php8.2 occ theming:config slogan "$NC_SLOGAN"
-    sudo -u www-data php8.2 occ theming:config url "https://$NC_FQDN"
+    $NC_OCC theming:config name "$NC_NAME"
+    $NC_OCC theming:config slogan "$NC_SLOGAN"
+    $NC_OCC theming:config url "https://$NC_FQDN"
 fi
 
 # installing default apps
 if [ "$INSTALL_DEFAULT_APPS" = "on" ]; then
-    sudo -u www-data php8.2 occ app:install calendar
-    sudo -u www-data php8.2 occ app:install contacts
-    sudo -u www-data php8.2 occ app:install mail
-    sudo -u www-data php8.2 occ app:install passwords
-    sudo -u www-data php8.2 occ app:install groupfolders
+    $NC_OCC app:install calendar
+    $NC_OCC app:install contacts
+    $NC_OCC app:install mail
+    $NC_OCC app:install passwords
+    $NC_OCC app:install groupfolders
 fi
 
 # memories app
 if [ "$INSTALL_MEMORIES" = "on" ]; then
-    sudo -u www-data php8.2 occ app:install memories
-    sudo -u www-data php8.2 occ app:install previewgenerator
-    sudo -u www-data php8.2 occ app:enable recognize
+    $NC_OCC app:install memories
+    $NC_OCC app:install previewgenerator
+    $NC_OCC app:enable recognize
 
-    sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 0 --value=OC\\Preview\\Image
-    sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 1 --value=OC\\Preview\\HEIC
-    sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 2 --value=OC\\Preview\\TIFF
-    sudo -u www-data php8.2 occ config:system:set enabledPreviewProviders 3 --value=OC\\Preview\\Movie
+    $NC_OCC config:system:set enabledPreviewProviders 0 --value=OC\\Preview\\Image
+    $NC_OCC config:system:set enabledPreviewProviders 1 --value=OC\\Preview\\HEIC
+    $NC_OCC config:system:set enabledPreviewProviders 2 --value=OC\\Preview\\TIFF
+    $NC_OCC config:system:set enabledPreviewProviders 3 --value=OC\\Preview\\Movie
 
-    sudo -u www-data php8.2 occ memories:index --force 
-    sudo -u www-data php8.2 occ db:add-missing-indices
+    $NC_OCC memories:index --force 
+    $NC_OCC db:add-missing-indices
 
     #disabled - takes to long for testing
-    # sudo -u www-data php8.2 occ memories:places-setup
+    # $NC_OCC memories:places-setup
 fi
 
 
@@ -256,25 +254,31 @@ fi
 
 # spreed = talk app
 if [ "$INSTALL_TALK" = "on" ]; then
-    sudo -u www-data php8.2 occ app:install spreed
+    $NC_OCC app:install spreed
 fi
 
 if [ "$INSTALL_ONLYOFFICE" = "on" ]; then
     # onlyoffice
-    sudo -u www-data php8.2 occ app:install onlyoffice
-    sudo -u www-data php occ config:app:set onlyoffice DocumentServerUrl --value=https://$OF_FQDN
-    sudo -u www-data php occ config:app:set onlyoffice jwt_secret --value=$OF_JWT
-    sudo -u www-data php8.2 occ config:system:set onlyoffice wt_secret --value=$OF_JWT
-    sudo -u www-data php8.2 occ config:system:set onlyoffice jwt_header --value=Authorization
+    $NC_OCC app:install onlyoffice
+    $NC_OCC config:app:set onlyoffice DocumentServerUrl --value=http://localhost:$OF_PORT
+    # $NC_OCC config:app:set onlyoffice DocumentServerUrl --value=https://$OF_FQDN
+    $NC_OCC config:app:set onlyoffice jwt_secret --value=$OF_JWT
+    $NC_OCC config:system:set onlyoffice wt_secret --value=$OF_JWT
+    $NC_OCC config:system:set onlyoffice jwt_header --value=Authorization
 fi
 
-sudo -u www-data php8.2 occ maintenance:repair --include-expensive
-sudo -u www-data php8.2 occ db:add-missing-indices
+$NC_OCC maintenance:repair --include-expensive
+$NC_OCC db:add-missing-indices
 
 echo "Finished configuring Nextcloud."
 echo "Restart Apache..."
 systemctl reload apache2.service
 echo "Done restarting."
+
+echo "removing first nextloud.log"
+rm $NC_DATA_DIR/nextcloud.log
+echo "removing done.."
+
 cd $STARTING_DIR
 
 exit 0

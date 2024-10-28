@@ -1,0 +1,20 @@
+# TURN Server (coturn) installation
+
+# OnlyOffice
+# check if onlyoffice works from outside when documentServerUrl = https://localhost:$OF_PORT
+
+# Install VPN
+
+# Install ReverseProxyManager
+# alternate - when no ReverseProxyManager - certbot shall require an certificate and install it localy
+
+# write readme / handbook -> Place it by nc-admin Folders
+
+# complete Install GUI
+
+# fixing networkconfiguration (mind LOCAL_NETWORK_IP)
+
+# Maybe create own AMAK-AT Logo and replace Nextcloud Logo
+
+# Testing on Raspi
+# format and automount harddisks from USB-Dock
