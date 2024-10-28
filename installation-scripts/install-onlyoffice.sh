@@ -11,7 +11,6 @@ docker exec onlyoffice-document-server sudo documentserver-jwt-status.sh > ./JWT
 
 OF_JWT=$(grep "JWT secret" JWT.txt | awk -F ' -  ' '{print $2}')
 
-echo "JWT = $OF_JWT"
 sed -i "s|^OF_JWT=.*|OF_JWT=$OF_JWT|" "$1"
 
 exit 0
