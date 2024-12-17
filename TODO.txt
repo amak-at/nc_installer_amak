@@ -11,6 +11,19 @@
 # write readme / handbook -> Place it by nc-admin Folders
 
 # complete Install GUI
+Ablauf:
+Ein Welcome-Screen
+Diskmanagement (Welche Platten gibt es - eventuell mit einbinden und automatischen Mounten)
+Frage was soll installiert / gemacht werden? 
+Hostname wechseln?
+IP-Addresse anpassen / wechseln?
+Nextcloud installieren - mit welchen Apps? -> Menu Ansicht
+Backup Lösung? -> Mit E-Mail Benachrichtigung wenn was schief geht?
+Zum Schluss fragen nach VPN Lösung.
+
+Am Ende eine Übersicht über alles was installiert wird.
+Dann eventuell mit Ladebalken?
+Eine kurze Erklärung wo im Anschluss die Sachen in der Nextcloud gefunden werden können / wie man sich zur Nextcloud verbinden kann
 
 # fixing networkconfiguration (mind LOCAL_NETWORK_IP)
 
