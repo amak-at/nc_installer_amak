@@ -42,7 +42,7 @@ apt-get update > /dev/null 2>&1
 apt-get install -y dialog > /dev/null 2>&1
 echo "Done. Starting GUI..."
 
-./setup/dialog/dialog.sh $CONF_FILE
+./setup/dialog/menu.sh $CONF_FILE
 
 #clear
 #./gui/install_menu.sh $ENV_DIR
