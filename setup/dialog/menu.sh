@@ -9,6 +9,8 @@ OUTPUT=$TEMP_DIR/output.sh.$$
 
 backtitle_txt="[ Nextcloud-Installer (c) Amak-AT ]"
 declare -A nextcloud_settings
+declare -A nextcloud_mail_settings
+
 declare -A backup_settings
 
 trap "rm $OUTPUT; rm $INPUT; exit" SIGHUP SIGINT SIGTERM
@@ -20,16 +22,6 @@ function welcome_screen() {
         --msgbox "Willkommen beim Nextcloud-Installer von Amak-AT. \
         In den folgenden Schritten werden Sie durch die Installtion geleitet. Wollen Sie beginnen?" 15 50
 
-}
-
-function display_output() {
-    local height=${1-16}
-    local width=${2-50}
-    local title=${3-$backtitle_txt}
-
-    dialog --backtitle ${backtitle_txt} \
-    --title "${title}" \
-    --msgbox "${msgbox}" --clear --msgbox "$(<$OUTPUT)" ${height} ${width}
 }
 
 function update_setup_conf() {
@@ -127,41 +119,171 @@ function show_network_settings(){
 function show_nextcloud_settings(){
     exec 3>&1
 
+    dialog --backtitle "$backtitle_txt" \
+        --title "[ NEXTCLOUD KONFIGURIEREN ]" \
+        --yes-label "Weiter" \
+        --msgbox "Als erstes wähle ein Installationsort für deine Nextcloud aus. \nEs wird \"/var/www\" empfohlen." 10 50
+
+    base_dir=$(dialog --backtitle "$backtitle_txt" \
+        --title "[ NEXTCLOUD Installationsverzeichnis ]" \
+        --nocancel \
+        --dselect "$NC_BASE" 10 50 \
+        2>&1 1>&3)
+
+    sed -i "s|^NC_BASE=.*|NC_BASE=\"${base_dir}\"|" "$CONF_FILE"
+
+    dialog --backtitle "$backtitle_txt" \
+        --title "[ NEXTCLOUD KONFIGURIEREN ]" \
+        --yes-label "Weiter" \
+        --msgbox "Als nächstes wähle den Ordner für deine Nextcloud Datein aus. \nEs wird ein Pfad empfohlen, welcher möglichst viel Speicherplatz bietet. \nZum Beispiel: \"/mnt/sdb/data\". \nEin nicht vorhandener Ordner wird später automatisch erstellt." 15 50
+
+    data_dir=$(dialog --backtitle "$backtitle_txt" \
+        --title "[ NEXTCLOUD Installationsverzeichnis ]" \
+        --nocancel \
+        --dselect "$NC_DATA_DIR" 10 50 \
+        2>&1 1>&3)
+
+    sed -i "s|^NC_DATA_DIR=.*|NC_DATA_DIR=\"${data_dir}\"|" "$CONF_FILE"
+
+    new_nc_name=$(dialog --backtitle "$backtitle_txt" \
+    --title "[ NEXTCLOUD Name ]" --no-cancel \
+    --inputbox "Wie soll deine Nextcloud heißen? (standard: $NC_NAME):" 10 50 ${NC_NAME} 2>&1 1>&3)
+
+    if [ "$new_nc_name" != "$NC_NAME" ]; then
+        sed -i "s|^NC_NAME=.*|NC_NAME=\"${new_nc_name}\"|" "$CONF_FILE"
+        sed -i "s|^NC_ADAPT_THEMING=.*|NC_ADAPT_THEMING=on|" "$CONF_FILE"
+    fi
+
+    new_nc_slogan=$(dialog --backtitle "$backtitle_txt" \
+    --title "[ NEXTCLOUD Name ]" --no-cancel \
+    --inputbox "Welchen Slogan möchtest du deiner Nextcloud geben?" 10 50 ${NC_SLOGAN} 2>&1 1>&3)
+
+    if [ "$new_nc_slogan" != "$NC_SLOGAN" ]; then
+        sed -i "s|^NC_SLOGAN=.*|NC_SLOGAN=\"${new_nc_slogan}\"|" "$CONF_FILE"
+        sed -i "s|^NC_ADAPT_THEMING=.*|NC_ADAPT_THEMING=on|" "$CONF_FILE"
+    fi
+
+    new_fqdn_port=$(dialog --backtitle "$backtitle_txt" \
+    --title "[ NEXTCLOUD Domainname ]" --no-cancel \
+    --inputbox "Unter welchen vollen Domainnamen soll deine Nextcloud erreichbar sein?" 10 50 "nextcloud.meinedomain.com" 2>&1 1>&3)
+
+    sed -i "s|^NC_FQDN=.*|NC_FQDN=\"${new_fqdn_port}\"|" "$CONF_FILE"
+
+    new_nc_port=$(dialog --backtitle "$backtitle_txt" \
+    --title "[ NEXTCLOUD Port ]" --no-cancel \
+    --inputbox "Unter welchen Port soll deine Nextcloud erreichbar sein?" 10 50 ${NC_PORT} 2>&1 1>&3)
+
+    sed -i "s|^NC_PORT=.*|NC_PORT=\"${new_nc_port}\"|" "$CONF_FILE"
+
+
+    dialog --backtitle "$backtitle_txt" \
+    --title "[ NEXTCLOUD E-Mail ]" \
+    --yesno "Möchtest du deiner Nextcloud einen E-Mail Account zuweisen?" 10 30
+
+    activate_mail=$?
+
+    if [ $activate_mail == 0 ]; then
+        mail_settings=$(dialog --ok-label "Anwenden" \
+                --nocancel \
+                --backtitle "$backtitle_txt" \
+                --title "[ NEXTCLOUD E-Mail Einstellungen ]" \
+                --form "Mit dieser E-Mail kommuniziert deine Nextcloud."\
+                20 60 0 \
+                "SMPT Host"               2 1     "$NC_SMPT_HOST"                  2 25 35 0 \
+                "SMPT Port (std: 465)"               3 1     "$NC_SMPT_PORT"              3 25 35 0 \
+                ""                              4 1     ""                          4 25 0 0 \
+                "E-Mail Domain"            5 1     "$NC_EMAIL_DOMAIN"                          5 25 35 0 \
+                "E-Mail Adresse"                6 1     "$NC_FROM_EMAIL_ADDRESS"               6 25 35 0 \
+                "E-Mail Passwort"                7 1     "$NC_EMAIL_PASSWORD"               7 25 35 0 \
+                "Hinweis: adresse@domain"            8 1     ""               8 25 0 0 \
+        2>&1 1>&3)
+
+        IFS=$'\n' read -d '' -r -a values_array <<< "$mail_settings"
+
+        nextcloud_mail_settings=(
+            [NC_SMPT_HOST]="${values_array[0]}"
+            [NC_SMPT_PORT]="${values_array[1]}"
+            [NC_EMAIL_DOMAIN]="${values_array[2]}"
+            [NC_FROM_EMAIL_ADDRESS]="${values_array[3]}"
+            [NC_EMAIL_PASSWORD]="${values_array[4]}"
+        )
+        update_setup_conf nextcloud_mail_settings
+        sed -i "s|^NC_SETUP_EMAIL=.*|NC_SETUP_EMAIL=on|" "$CONF_FILE"
+    else
+        sed -i "s|^NC_SETUP_EMAIL=.*|NC_SETUP_EMAIL=off|" "$CONF_FILE"
+    fi
+
+
     VALUES=$(dialog --ok-label "Anwenden" \
             --nocancel \
             --backtitle "$backtitle_txt" \
-            --title "[ NEXTCLOUD KONFIGURIEREN ]" \
-            --form "Nextcloud einstellungen"\
+            --title "[ NEXTCLOUD Benutzer ]" \
+            --form "Benutzereinstellungen für deine Nextcloud"\
             20 60 0 \
-            "Nextcloud Ordner"         1 1     ""                          1 25 0 0 \
-            "für Installtion:"               2 1     "$NC_BASE"                  2 25 35 0 \
-            "für Datein:"               3 1     "$NC_DATA_DIR"              3 25 35 0 \
-            ""                              4 1     ""                          4 25 0 0 \
-            "Nextcloud Datenbank"            5 1     ""                          5 25 0 0 \
-            "Datenbankname:"                6 1     "$NC_DB_NAME"               6 25 35 0 \
-            "Benutzer:"                7 1     "$NC_DB_USER"               7 25 35 0 \
-            "Passwort:"            8 1     "$NC_DB_PASS"               8 25 35 0 \
-            ""                              9 1     ""                          9 25 0 0 \
-            "Nextcloud Admin"          10 1    ""                          10 25 0 0 \
-            "Benutzername:"                   11 1    "$NC_ADMIN_USER"            11 25 35 0 \
-            "Passwort:"               12 1    "$NC_ADMIN_USER_PASS"       12 25 35 0 \
+            "Nextcloud Datenbank"            1 1     ""                          1 25 0 0 \
+            "Datenbankname:"                2 1     "$NC_DB_NAME"               2 25 35 0 \
+            "Benutzer:"                3 1     "$NC_DB_USER"               3 25 35 0 \
+            "Passwort:"            4 1     "$NC_DB_PASS"               4 25 35 0 \
+            ""                              5 1     ""                          5 25 0 0 \
+            "Nextcloud Admin"          6 1    ""                          6 25 0 0 \
+            "Benutzername:"                   7 1    "$NC_ADMIN_USER"            7 25 35 0 \
+            "Passwort:"               8 1    "$NC_ADMIN_USER_PASS"       8 25 35 0 \
     2>&1 1>&3)
 
-    exec 3>&-
 
     IFS=$'\n' read -d '' -r -a values_array <<< "$VALUES"
 
     nextcloud_settings=(
-        [NC_BASE]="${values_array[0]}"
-        [NC_DATA_DIR]="${values_array[1]}"
-        [NC_DB_NAME]="${values_array[2]}"
-        [NC_DB_USER]="${values_array[3]}"
-        [NC_DB_PASS]="${values_array[4]}"
-        [NC_ADMIN_USER]="${values_array[5]}"
-        [NC_ADMIN_USER_PASS]="${values_array[6]}"
+        [NC_DB_NAME]="${values_array[0]}"
+        [NC_DB_USER]="${values_array[1]}"
+        [NC_DB_PASS]="${values_array[2]}"
+        [NC_ADMIN_USER]="${values_array[3]}"
+        [NC_ADMIN_USER_PASS]="${values_array[4]}"
     )
 
     update_setup_conf nextcloud_settings
+
+
+    dialog --backtitle "$backtitle_txt" \
+    --title "[ NEXTCLOUD Standard-Apps ]" \
+    --yesno "Möchtest du Standard-Apps gleich mit installieren (empfohlen)?" 10 50
+
+    install_apps=$?
+
+    if [ $install_apps == 0 ]; then
+        sed -i "s|^INSTALL_DEFAULT_APPS=.*|INSTALL_DEFAULT_APPS=on|" "$CONF_FILE"
+
+        choices=$(dialog --ok-label "Anwenden" \
+            --nocancel \
+            --backtitle "$backtitle_txt" \
+            --title "[ NEXTCLOUD Benutzer ]" \
+            --checklist "Welche Apps möchtest du installieren?\nMit [Space] an- und abwählen." 20 55 8 \
+            1 "Kalender" on \
+            2 "Kontaktverwaltung" on \
+            3 "Web-Mail" on \
+            4 "Passwortsafe" on \
+            5 "Fotoverwaltung (wie Google Fotos)" on \
+            6 "Text-, Video- und Sprachchat" on \
+            7 "Dokumenten Editor (wie Microsoft Office)" on \
+            8 "Gruppenordner Verwaltung" on \
+            2>&1 1>&3)
+
+            for choice in $choices; do
+                case $choice in
+                    1) sed -i "s|^INSTALL_CALENDAR=.*|INSTALL_CALENDAR=on|" "$CONF_FILE" ;;
+                    2) sed -i "s|^INSTALL_CONTACTS=.*|INSTALL_CONTACTS=on|" "$CONF_FILE" ;;
+                    3) sed -i "s|^INSTALL_MAIL=.*|INSTALL_MAIL=on|" "$CONF_FILE" ;;
+                    4) sed -i "s|^INSTALL_PASSWORDS=.*|INSTALL_PASSWORDS=on|" "$CONF_FILE" ;;
+                    5) sed -i "s|^INSTALL_MEMORIES=.*|INSTALL_MEMORIES=on|" "$CONF_FILE" ;;
+                    6) sed -i "s|^INSTALL_TALK=.*|INSTALL_TALK=on|" "$CONF_FILE" ;;
+                    7) sed -i "s|^INSTALL_ONLYOFFICE=.*|INSTALL_ONLYOFFICE=on|" "$CONF_FILE" ;;
+                    8) sed -i "s|^ISNTALL_GROUPFOLDERS=.*|ISNTALL_GROUPFOLDERS=on|" "$CONF_FILE" ;;
+                esac
+            done
+    fi
+
+    exec 3>&-
+
     source $CONF_FILE    
 }
 
