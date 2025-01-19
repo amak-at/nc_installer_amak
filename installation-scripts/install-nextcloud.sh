@@ -154,11 +154,11 @@ a2enmod mime
 
 echo "Enabeling done."
 
-#if [ "$INSTALL_REVERSE_PROXY" = "off" ]; then
-    # echo "No reverse Proxy in use. Create certificate.."
-    # certbot --apache -m $CERTBOT_EMAIL -d $NC_FQDN
-    # echo "Certificate for $NC_FQDN created."
-#fi
+if [ "$USE_REVERSE_PROXY" = "off" ]; then
+    echo "No reverse Proxy in use. Create certificate.."
+    certbot --apache -m $CERTBOT_EMAIL -d $NC_FQDN
+    echo "Certificate for $NC_FQDN created."
+fi
 
 # Restart Apache to apply changes
 echo "Restarting Apache..."
@@ -194,11 +194,11 @@ $NC_OCC config:system:set redis timeout --value=1.5
 #trusted domains
 $NC_OCC config:system:set trusted_domains 0 --value=localhost
 $NC_OCC config:system:set trusted_domains 1 --value=$NC_FQDN
-$NC_OCC config:system:set trusted_domains 2 --value=$LOCAL_NETWORK_IP
+$NC_OCC config:system:set trusted_domains 2 --value=192.168.0.*
 
 
 # trusted proxies
-if [ "$INSTALL_REVERSE_PROXY" = "on" ]; then
+if [ "$USE_REVERSE_PROXY" = "on" ]; then
     $NC_OCC config:system:set trusted_proxies 1 --value=$REVERSE_PROXY_IP
 fi
 
@@ -224,47 +224,58 @@ fi
 
 # installing default apps
 if [ "$INSTALL_DEFAULT_APPS" = "on" ]; then
-    $NC_OCC app:install calendar
-    $NC_OCC app:install contacts
-    $NC_OCC app:install mail
-    $NC_OCC app:install passwords
-    $NC_OCC app:install groupfolders
-fi
+    if [ "$INSTALL_CALENDAR" = "on" ]; then
+        $NC_OCC app:install calendar
+    fi
 
-# memories app
-if [ "$INSTALL_MEMORIES" = "on" ]; then
-    $NC_OCC app:install memories
-    $NC_OCC app:install previewgenerator
-    $NC_OCC app:enable recognize
+    if [ "$INSTALL_CONTACTS" = "on" ]; then
+        $NC_OCC app:install contacts
+    fi
 
-    $NC_OCC config:system:set enabledPreviewProviders 0 --value=OC\\Preview\\Image
-    $NC_OCC config:system:set enabledPreviewProviders 1 --value=OC\\Preview\\HEIC
-    $NC_OCC config:system:set enabledPreviewProviders 2 --value=OC\\Preview\\TIFF
-    $NC_OCC config:system:set enabledPreviewProviders 3 --value=OC\\Preview\\Movie
+    if [ "$INSTALL_MAIL" = "on" ]; then
+        $NC_OCC app:install mail
+    fi
 
-    $NC_OCC memories:index --force 
-    $NC_OCC db:add-missing-indices
+    if [ "$INSTALL_PASSWORDS" = "on" ]; then
+        $NC_OCC app:install passwords
+    fi
 
-    #disabled - takes to long for testing
-    # $NC_OCC memories:places-setup
-fi
+    if [ "$INSTALL_GROUPFOLDERS" = "on" ]; then
+        $NC_OCC app:install groupfolders
+    fi
 
+    # memories app
+    if [ "$INSTALL_MEMORIES" = "on" ]; then
+        $NC_OCC app:install memories
+        $NC_OCC app:install previewgenerator
+        $NC_OCC app:enable recognize
 
+        $NC_OCC config:system:set enabledPreviewProviders 0 --value=OC\\Preview\\Image
+        $NC_OCC config:system:set enabledPreviewProviders 1 --value=OC\\Preview\\HEIC
+        $NC_OCC config:system:set enabledPreviewProviders 2 --value=OC\\Preview\\TIFF
+        $NC_OCC config:system:set enabledPreviewProviders 3 --value=OC\\Preview\\Movie
 
+        $NC_OCC memories:index --force 
+        $NC_OCC db:add-missing-indices
 
-# spreed = talk app
-if [ "$INSTALL_TALK" = "on" ]; then
-    $NC_OCC app:install spreed
-fi
+        #disabled - takes to long for testing
+        # $NC_OCC memories:places-setup
+    fi
 
-if [ "$INSTALL_ONLYOFFICE" = "on" ]; then
-    # onlyoffice
-    $NC_OCC app:install onlyoffice
-    $NC_OCC config:app:set onlyoffice DocumentServerUrl --value=http://localhost:$OF_PORT
-    # $NC_OCC config:app:set onlyoffice DocumentServerUrl --value=https://$OF_FQDN
-    $NC_OCC config:app:set onlyoffice jwt_secret --value=$OF_JWT
-    $NC_OCC config:system:set onlyoffice wt_secret --value=$OF_JWT
-    $NC_OCC config:system:set onlyoffice jwt_header --value=Authorization
+    # spreed = talk app
+    if [ "$INSTALL_TALK" = "on" ]; then
+        $NC_OCC app:install spreed
+    fi
+
+    if [ "$INSTALL_ONLYOFFICE" = "on" ]; then
+        # onlyoffice
+        $NC_OCC app:install onlyoffice
+        $NC_OCC config:app:set onlyoffice DocumentServerUrl --value=http://localhost:$OF_PORT
+        # $NC_OCC config:app:set onlyoffice DocumentServerUrl --value=https://$OF_FQDN
+        $NC_OCC config:app:set onlyoffice jwt_secret --value=$OF_JWT
+        $NC_OCC config:system:set onlyoffice wt_secret --value=$OF_JWT
+        $NC_OCC config:system:set onlyoffice jwt_header --value=Authorization
+    fi
 fi
 
 $NC_OCC maintenance:repair --include-expensive
