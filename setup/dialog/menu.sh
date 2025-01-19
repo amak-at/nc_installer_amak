@@ -20,7 +20,7 @@ function welcome_screen() {
         --title "Willkommen!" \
         --yes-label "Weiter" \
         --msgbox "Willkommen beim Nextcloud-Installer von Amak-AT. \
-        In den folgenden Schritten werden Sie durch die Installtion geleitet. Wollen Sie beginnen?" 15 50
+        In den folgenden Schritten werden Sie durch die Installtion geleitet." 15 50
 
 }
 
@@ -282,6 +282,8 @@ function show_nextcloud_settings(){
             done
     fi
 
+    sed -i "s|^INSTALL_NC=.*|INSTALL_NC=on|" "$CONF_FILE"
+
     exec 3>&-
 
     source $CONF_FILE    
@@ -290,41 +292,125 @@ function show_nextcloud_settings(){
 function show_backup_settings(){
     exec 3>&1
 
-    VALUES=$(dialog --ok-label "Submit" \
-            --cancel-label "Cancel" \
-            --backtitle "$backtitle_txt" \
-            --title "[ B A C K U P ]" \
-            --form "Nextcloud settings"\
-            20 60 0 \
-            "Nextcloud Directories"         1 1    ""                           1 25 0 0  \
-            "Destination directory:"        2 1    "$BACKUP_DIR"                2 25 35 0 \
-            "Management directory:"         3 1    "$BACKUP_ROOT_DIR"           3 25 35 0 \
-            ""                              4 1    ""                           4 25 0 0  \
-            "Backup password:"              5 1    "$BACKUP_PASS"               5 25 35 0 \
-            ""                              6 1    ""                           6 25 0 0  \
-            "Timesettings for daily Backup" 7 1    ""                           7 25 0 0  \
-            "Backup hour (0-23):"           8 1    "$BACKUP_TIME_HOUR"          8 25 35 0 \
-            "Backup minute (0-59):"         9 1    "$BACKUP_TIME_MINUTE"        9 25 35 0 \
-    2>&1 1>&3)
+    dialog --backtitle "$backtitle_txt" \
+    --title "[ B A C K U P ]" \
+    --yesno "Möchtest du ein Backup gleich mit installieren (empfohlen)?" 10 50
+
+    backup_install=$?
+
+    if [ $backup_install == 0 ]; then
+        sed -i "s|^INSTALL_BACKUP=.*|INSTALL_BACKUP=on|" "$CONF_FILE"
+        VALUES=$(dialog --ok-label "Submit" \
+                --cancel-label "Cancel" \
+                --backtitle "$backtitle_txt" \
+                --title "[ B A C K U P ]" \
+                --form "Nextcloud settings"\
+                20 60 0 \
+                "Nextcloud Directories"         1 1    ""                           1 25 0 0  \
+                "Destination directory:"        2 1    "$BACKUP_DIR"                2 25 35 0 \
+                "Management directory:"         3 1    "$BACKUP_ROOT_DIR"           3 25 35 0 \
+                ""                              4 1    ""                           4 25 0 0  \
+                "Backup password:"              5 1    "$BACKUP_PASS"               5 25 35 0 \
+                ""                              6 1    ""                           6 25 0 0  \
+                "Timesettings for daily Backup" 7 1    ""                           7 25 0 0  \
+                "Backup hour (0-23):"           8 1    "$BACKUP_TIME_HOUR"          8 25 35 0 \
+                "Backup minute (0-59):"         9 1    "$BACKUP_TIME_MINUTE"        9 25 35 0 \
+        2>&1 1>&3)
+
+    
+
+        IFS=$'\n' read -d '' -r -a values_array <<< "$VALUES"
+
+        backup_settings=(
+            [BACKUP_DIR]="${values_array[0]}"
+            [BACKUP_ROOT_DIR]="${values_array[1]}"
+            [BACKUP_PASS]="${values_array[2]}"
+            [BACKUP_TIME_HOUR]="${values_array[3]}"
+            [BACKUP_TIME_MINUTE]="${values_array[4]}"
+        )
+
+        update_setup_conf backup_settings
+    else
+        sed -i "s|^INSTALL_BACKUP=.*|INSTALL_BACKUP=off|" "$CONF_FILE"
+    fi
 
     exec 3>&-
+    source $CONF_FILE 
+}
 
-    IFS=$'\n' read -d '' -r -a values_array <<< "$VALUES"
+function show_reverse_proxy_settings(){
+    exec 3>&1
 
-    backup_settings=(
-        [BACKUP_DIR]="${values_array[0]}"
-        [BACKUP_ROOT_DIR]="${values_array[1]}"
-        [BACKUP_PASS]="${values_array[2]}"
-        [BACKUP_TIME_HOUR]="${values_array[3]}"
-        [BACKUP_TIME_MINUTE]="${values_array[4]}"
-    )
+    dialog --backtitle "$backtitle_txt" \
+    --title "[ R E V E R S E  P R O X Y ]" \
+    --yesno "Besitzt du bereits einen Reverse Proxy?" 10 50
 
-    update_setup_conf backup_settings
+    has_reverse_proxy=$?
+
+    if [ $has_reverse_proxy == 0 ]; then
+        sed -i "s|^USE_REVERSE_PROXY=.*|USE_REVERSE_PROXY=on|" "$CONF_FILE"
+
+        reverseproxy_ip=$(dialog --backtitle "$backtitle_txt" \
+            --title "[ R E V E R S E  P R O X Y ]" --no-cancel \
+            --inputbox "Welche IP-Adresse hat dein Reverse Proxy?" 10 50 2>&1 1>&3)
+
+        sed -i "s|^REVERSE_PROXY_IP=.*|REVERSE_PROXY_IP=\"${reverseproxy_ip}\"|" "$CONF_FILE"
+    else
+        dialog --backtitle "$backtitle_txt" \
+        --title "[ R E V E R S E  P R O X Y ]" \
+        --yesno "Möchtest du einen Reverse Proxy Installieren (Nginx Proxy Manager)?" 10 50
+
+        INSTALL_REVERSE_PROXY=$?
+        if [ $has_reverse_proxy == 0 ]; then
+            sed -i "s|^USE_REVERSE_PROXY=.*|USE_REVERSE_PROXY=on|" "$CONF_FILE"
+        else
+            sed -i "s|^USE_REVERSE_PROXY=.*|USE_REVERSE_PROXY=off|" "$CONF_FILE"
+           
+            certbot_mail=$(dialog --backtitle "$backtitle_txt" \
+            --title "[ R E V E R S E  P R O X Y ]" --no-cancel \
+            --inputbox "Bitte gib eine E-Mail an, mit der ein Zertifikat bei Lets Encrypt angefordert wird." 10 50 2>&1 1>&3)
+
+            sed -i "s|^CERTBOT_EMAIL=.*|CERTBOT_EMAIL=\"${certbot_mail}\"|" "$CONF_FILE"
+        fi
+    fi
+    exec 3>&-
     source $CONF_FILE 
 }
 
 function show_reset_settings(){
-    echo "test"
+    exec 3>&1
+
+    dialog --backtitle "$backtitle_txt" \
+    --title "[ Z U R Ü C K S E T Z E N ]" \
+    --yesno "Willst du die Einstellungen zurück setzen?" 10 50
+
+    revert_settings=$?
+    if [ $revert_settings == 0 ]; then
+        cat ./setup/config/setup-example.conf > $CONF_FILE
+    fi
+    exec 3>&-
+    source $CONF_FILE 
+
+}
+
+function validate_config(){
+    exec 3>&-
+    if [ -z "$SELECTED_INTERFACE" ]; then
+        dialog --backtitle "$backtitle_txt" \
+            --title "Kontrolle" \
+            --msgbox "Es wurde keine Netzwerkschnittstelle ausgewählt." 7 50
+    fi
+    if [ -z "$INSTALL_NC" ]; then
+            dialog --backtitle "$backtitle_txt" \
+            --title "Kontrolle" \
+            --msgbox "Nextcloud wurde nicht konfiguriert" 7 50
+    fi
+    if [ -z "$USE_REVERSE_PROXY" ]; then
+            dialog --backtitle "$backtitle_txt" \
+            --title "Kontrolle" \
+            --msgbox "Reverse Proxy Einstellungen wurden nicht gesetzt." 7 50
+    fi
+   exec 3>&-
 }
 
 welcome_screen
@@ -333,12 +419,13 @@ while true
 do
     ## display main menu ##
     dialog --clear --no-cancel --backtitle "$backtitle_txt" --title "[ HAUPTMENU ]" \
-    --menu "Wählen Sie etwas aus..." 15 50 4 \
-    "Festplatten" "Festplatten verwalten" \
+    --menu "Wählen Sie etwas aus. Menüpunkte welche mit (*) gekenntzeichnet sind notwendig!" 15 50 4 \
     "Gerätenamen" "Gerätenamen wechseln" \
-    "Netzwerk" "Netzwerk einstellen" \
-    "Nextcloud" "Nextcloud konfigurieren" \
+    "Netzwerk" "(*) Netzwerk einstellen" \
+    "Nextcloud" "(*) Nextcloud konfigurieren" \
+    "ReverseProxy" "(*) Reverse Proxy einstellen" \
     "Backup" "Backup einrichten" \
+    "Installieren" "starte Installation" \
     "Zurücksetzen" "Einstellungen zurücksetzen" \
     "Verlassen" "Installtion beenden" 2>"${INPUT}"
 
@@ -346,8 +433,6 @@ do
 
     # make decision
     case $menuitem in
-        Festplatten )
-         ;;
         Gerätenamen )
          show_hostname_settings;;
         Netzwerk )
@@ -356,15 +441,36 @@ do
          show_nextcloud_settings;;
         Backup )
          show_backup_settings;;
+        ReverseProxy )
+         show_reverse_proxy_settings;;
+        Installieren )
+         validate_config
+        if [ -n "$USE_REVERSE_PROXY" ] && [ -n "$INSTALL_NC" ] && [ -n "$SELECTED_INTERFACE" ]; then
+            dialog --backtitle "$backtitle_txt" \
+            --title "[ I N S T A L L I E R E N ]" \
+            --yesno "Möchtest du den installationsprozess jetzt starten?" 10 50
+
+            install_yesno=$?
+
+            if [ $install_yesno == 0 ]; then
+                clear
+                sed -i "s|^START_INTALL=.*|START_INTALL=yes|" "$CONF_FILE"
+                break
+            fi
+        fi
+    ;;
         Zurücksetzen )
          show_reset_settings;;
         Verlassen )
+        clear;
          echo "bye"; break;;
         *)
          echo "Bye"; break;;
     esac
 
 done
+
+./installation-scripts/execute_install.sh $CONF_FILE
 
 # if temp files found, delete em
 [ -f $OUTPUT ] && rm $OUTPUT

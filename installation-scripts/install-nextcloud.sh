@@ -1,5 +1,6 @@
 #!/bin/bash
 source $1
+NC_OCC="sudo -u www-data php8.2 ${NC_DIR}/occ"
 
 # Secure MariaDB Installation
 echo "Securing MariaDB installation..."
@@ -71,7 +72,6 @@ cd $TEMP_DIR && wget https://download.nextcloud.com/server/releases/latest.zip
 echo "unzip Nextcloud..."
 unzip latest.zip >/dev/null
 echo "unzipping done!"
-
 mv nextcloud $NC_BASE/
 
 mkdir $NC_DATA_DIR
