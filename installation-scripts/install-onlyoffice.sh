@@ -2,6 +2,7 @@
 source $1
 
 cd $TEMP_DIR
+
 wget https://download.onlyoffice.com/docs/docs-install.sh
 bash docs-install.sh -dp $OF_PORT <<EOF
 y

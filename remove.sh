@@ -40,6 +40,7 @@ fi
 echo "autopurge starting.."
 apt autopurge -y > /dev/null 2>&1
 echo "autopurge done!"
+apt-get remove docker* -y
 
 echo "remove.sh finished"
 

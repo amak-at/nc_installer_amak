@@ -361,7 +361,7 @@ function show_reverse_proxy_settings(){
         --yesno "Möchtest du einen Reverse Proxy Installieren (Nginx Proxy Manager)?" 10 50
 
         INSTALL_REVERSE_PROXY=$?
-        if [ $has_reverse_proxy == 0 ]; then
+        if [ $INSTALL_REVERSE_PROXY == 0 ]; then
             sed -i "s|^USE_REVERSE_PROXY=.*|USE_REVERSE_PROXY=on|" "$CONF_FILE"
         else
             sed -i "s|^USE_REVERSE_PROXY=.*|USE_REVERSE_PROXY=off|" "$CONF_FILE"
