@@ -16,14 +16,9 @@ if [ "$INSTALL_NC" = "on" ]; then
     apt-get install apache2 -y > /dev/null 2>&1
 
     #install php8.3
-    echo "install PHP 8.2 ..."
-    apt-get install software-properties-common -y > /dev/null 2>&1
-    add-apt-repository ppa:ondrej/php -y > /dev/null 2>&1
-    apt-get update > /dev/null 2>&1
-    apt-get install -y php8.2 libapache2-mod-php8.2 php8.2-zip php8.2-xml php8.2-mbstring php8.2-gd php8.2-curl php8.2-imagick > /dev/null 2>&1
-    apt-get install -y libmagickcore-6.q16-6-extra php8.2-intl php8.2-bcmath php8.2-gmp php8.2-cli php8.2-mysql php8.2-zip php8.2-gd  php8.2-mbstring php8.2-curl > /dev/null 2>&1
-    apt-get install -y php8.2-xml php-pear unzip nano php8.2-apcu redis-server ufw php8.2-redis php8.2-smbclient php8.2-ldap php8.2-bz2 > /dev/null 2>&1
-    echo "PHP 8.2 done!"
+    echo "install PHP 8.3"
+    apt-get install -y php php-common libapache2-mod-php php-bz2 php-gd php-mysql php-curl php-mbstring php-imagick php-zip php-common php-curl php-xml php-json php-bcmath php-xml php-intl php-gmp zip unzip wget -y > /dev/null 2>&1
+    echo "PHP 8.3 done!"
 
     #install mariadb
     echo "install mariaDB..."
