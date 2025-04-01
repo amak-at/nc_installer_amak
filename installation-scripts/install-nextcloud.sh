@@ -1,18 +1,18 @@
 #!/bin/bash
 source $1
-NC_OCC="sudo -u www-data php8.2 ${NC_DIR}/occ"
+NC_OCC="sudo -u www-data php ${NC_DIR}/occ"
 
 # Secure MariaDB Installation
-echo "Securing MariaDB installation..."
-mysql_secure_installation <<EOF
-
-y
-n
-y
-y
-y
-y
-EOF
+#echo "Securing MariaDB installation..."
+#mysql_secure_installation <<EOF
+#
+#y
+#n
+#y
+#y
+#y
+#y
+#EOF
 
 # Wait for MariaDB to start
 sleep 5
