@@ -29,14 +29,14 @@ echo "Database and user created successfully."
 
 # PHP configuring
 echo "Configure PHP..."
-PHP_CONFIG_FILE="/etc/php/8.2/apache2/php.ini"
+PHP_CONFIG_FILE="/etc/php/8.3/apache2/php.ini"
 
 # Get the system's current timezone
 OS_TIMEZONE=$(timedatectl show --property=Timezone --value)
 
 # Definiere die Einstellungen als assoziatives Array
 declare -A SETTINGS=(
-    ["memory_limit"]="4096M"
+    ["memory_limit"]="8192M"
     ["upload_max_filesize"]="20G"
     ["post_max_size"]="20G"
     ["date.timezone"]="$OS_TIMEZONE"
