@@ -19,6 +19,8 @@ if [ "$INSTALL_NC" = "on" ]; then
     echo "install PHP 8.3"
     apt-get install redis -y
     apt-get install -y php php-common php-redis php-apcu libapache2-mod-php php-bz2 php-gd php-mysql php-curl php-mbstring php-imagick php-zip php-common php-curl php-xml php-json php-bcmath php-xml php-intl php-gmp zip unzip wget -y > /dev/null 2>&1
+    phpenmod redis
+    phpenmod apcu
     echo "PHP 8.3 done!"
 
     #install mariadb
